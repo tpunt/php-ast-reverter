@@ -1,0 +1,17 @@
+{
+    "name": "tpunt/php-ast-reverter",
+    "description": "Reverts an AST back into (somewhat) PSR-compliant code",
+    "require": {
+        "php": ">=7.0"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Thomas Punt",
+        }
+    ],
+    "minimum-stability": "dev",
+    "autoload": {
+        "files": ["src/autoloader.php"]
+    }
+}
