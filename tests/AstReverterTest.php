@@ -28,7 +28,7 @@ class AstReverterTest extends \PHPUnit_Framework_TestCase
             $input = trim($test[1]);
             $expected = ltrim($test[2]) . PHP_EOL;
 
-            $this->assertEquals($this->astReverter->getCode(parse_code($input)), $expected, $name);
+            $this->assertEquals($expected, $this->astReverter->getCode(parse_code($input)), $name);
         }
     }
 }

@@ -45,6 +45,8 @@ class AstReverter
                 return $this->assignOp($node);
             case \ast\AST_BINARY_OP:
                 return $this->binaryOp($node);
+            case \ast\AST_BREAK:
+                return $this->break($node);
             case \ast\AST_CALL:
                 return $this->call($node);
             case \ast\AST_CLASS:
@@ -76,7 +78,7 @@ class AstReverter
             case \ast\AST_MAGIC_CONST:
                 return $this->magicConst($node);
             case \ast\AST_METHOD:
-                return $this->decomposeMethod($node); // @update
+                return $this->method($node); // @update
             case \ast\AST_METHOD_CALL:
                 return $this->methodCall($node);
             case \ast\AST_NAME:
@@ -106,26 +108,13 @@ class AstReverter
             case \ast\AST_STATIC_PROP:
                 return $this->staticProp($node);
             case \ast\AST_STMT_LIST:
-                $buffer = '';
-
-                foreach ($node->children as $child) {
-                    $buffer .= "{$this->indent()}{$this->revertAST($child)}";
-
-                    if (
-                        $child instanceof Node
-                        && (
-                            $child->kind === \ast\AST_VAR
-                            || $child->kind === \ast\AST_PROP
-                            || $child->kind === \ast\AST_STATIC_PROP
-                        )
-                    ) {
-                        $buffer .= $this->forceTerminateStatement($buffer);
-                    } else {
-                        $buffer .= $this->terminateStatement($buffer);
-                    }
-                }
-
-                return $buffer;
+                return $this->stmtList($node);
+            case \ast\AST_SWITCH:
+                return $this->switch($node);
+            case \ast\AST_SWITCH_CASE:
+                return $this->switchCase($node);
+            case \ast\AST_SWITCH_LIST:
+                return $this->switchList($node);
             case \ast\AST_TYPE:
                 return $this->type($node);
             case \ast\AST_UNARY_MINUS:
@@ -343,6 +332,11 @@ class AstReverter
             . $this->revertAST($node->children[1]);
     }
 
+    private function break(Node $node) : string
+    {
+        return 'break';
+    }
+
     private function call(Node $node) : string
     {
         return $this->revertAST($node->children[0])
@@ -390,7 +384,7 @@ class AstReverter
 
         --$this->indentationLevel;
 
-        return $code . PHP_EOL . $this->indent() . '}';
+        return $code . $this->indent() . '}';
     }
 
     private function classConst(Node $node) : string
@@ -437,15 +431,7 @@ class AstReverter
 
     private function echo(Node $node) : string
     {
-        $code = 'echo ';
-
-        if ($node->children[0] instanceof Node) {
-            $code .= $this->revertAST($node->children[0]);
-        } else {
-            $code .= "{$this->revertAST($node->children[0])}";
-        }
-
-        return $code;
+        return "echo {$this->revertAST($node->children[0])}";
     }
 
     private function encapsList(Node $node) : string
@@ -503,11 +489,9 @@ class AstReverter
             $code .= $node->docComment . PHP_EOL;
         }
 
-        if (isset($node->children[3])) {
+        if ($node->children[3] !== null) {
             $returnType .= " : {$this->revertAST($node->children[3])}";
         }
-
-        // @TODO Doc comments here
 
         $code .= $this->indent()
             . "function {$node->name}"
@@ -541,17 +525,32 @@ class AstReverter
 
     private function if(Node $node) : string
     {
-        $code = 'if ';
+        $code = '';
+        $childCount = count($node->children);
 
-        $code .= $this->revertAST($node->children[0]) . ' {' . PHP_EOL;
+        for ($i = 0; $i < $childCount; ++$i) {
+            if ($childCount !== 1 && $i === $childCount -1) {
+                $code .= ' else';
+            } else {
+                if ($i === 0) {
+                    $code .= 'if ';
+                } else {
+                    $code .= ' elseif ';
+                }
 
-        ++$this->indentationLevel;
+                $code .= $this->revertAST($node->children[$i]);
+            }
 
-        $code .= $this->revertAST($node->children[0]->children[1]);
+            $code .= ' {' . PHP_EOL;
 
-        --$this->indentationLevel;
+            ++$this->indentationLevel;
 
-        $code .= $this->indent() . '}' . PHP_EOL;
+            $code .= $this->revertAST($node->children[$i]->children[1]);
+
+            --$this->indentationLevel;
+
+            $code .= $this->indent() . '}';
+        }
 
         return $code;
     }
@@ -575,6 +574,99 @@ class AstReverter
     private function magicConst(Node $node)
     {
         // ignore for now
+    }
+
+    private function method(Node $node) : string
+    {
+        $code = '';
+        $scope = '';
+
+        if (isset($node->docComment)) {
+            $code .= $node->docComment . PHP_EOL . $this->indent();
+        }
+
+        // (abstract|final)?(public|protected|private)(static)?
+        switch ($node->flags) {
+            case \ast\flags\MODIFIER_PUBLIC:
+                $scope = 'public';
+                break;
+            case \ast\flags\MODIFIER_ABSTRACT | \ast\flags\MODIFIER_PUBLIC:
+                $scope = 'abstract public';
+                break;
+            case \ast\flags\MODIFIER_FINAL | \ast\flags\MODIFIER_PUBLIC:
+                $scope = 'final public';
+                break;
+            case \ast\flags\MODIFIER_PUBLIC | \ast\flags\MODIFIER_STATIC:
+                $scope = 'public static';
+                break;
+            case \ast\flags\MODIFIER_ABSTRACT | \ast\flags\MODIFIER_PUBLIC | \ast\flags\MODIFIER_STATIC:
+                $scope = 'abstract public static';
+                break;
+            case \ast\flags\MODIFIER_FINAL | \ast\flags\MODIFIER_PUBLIC | \ast\flags\MODIFIER_STATIC:
+                $scope = 'final public static';
+                break;
+            case \ast\flags\MODIFIER_PROTECTED:
+                $scope = 'protected';
+                break;
+            case \ast\flags\MODIFIER_ABSTRACT | \ast\flags\MODIFIER_PROTECTED:
+                $scope = 'abstract protected';
+                break;
+            case \ast\flags\MODIFIER_FINAL | \ast\flags\MODIFIER_PROTECTED:
+                $scope = 'final protected';
+                break;
+            case \ast\flags\MODIFIER_PROTECTED | \ast\flags\MODIFIER_STATIC:
+                $scope = 'protected static';
+                break;
+            case \ast\flags\MODIFIER_ABSTRACT | \ast\flags\MODIFIER_PROTECTED | \ast\flags\MODIFIER_STATIC:
+                $scope = 'abstract protected static';
+                break;
+            case \ast\flags\MODIFIER_FINAL | \ast\flags\MODIFIER_PROTECTED | \ast\flags\MODIFIER_STATIC:
+                $scope = 'final protected static';
+                break;
+            case \ast\flags\MODIFIER_PRIVATE:
+                $scope = 'private';
+                break;
+            case \ast\flags\MODIFIER_ABSTRACT | \ast\flags\MODIFIER_PRIVATE:
+                $scope = 'abstract private';
+                break;
+            case \ast\flags\MODIFIER_FINAL | \ast\flags\MODIFIER_PRIVATE:
+                $scope = 'final private';
+                break;
+            case \ast\flags\MODIFIER_PRIVATE | \ast\flags\MODIFIER_STATIC:
+                $scope = 'private static';
+                break;
+            case \ast\flags\MODIFIER_ABSTRACT | \ast\flags\MODIFIER_PRIVATE | \ast\flags\MODIFIER_STATIC:
+                $scope = 'abstract private static';
+                break;
+            case \ast\flags\MODIFIER_FINAL | \ast\flags\MODIFIER_PRIVATE | \ast\flags\MODIFIER_STATIC:
+                $scope = 'final private static';
+                break;
+            default:
+                assert(false, 'Unknown flag combination: ' . $node->flags);
+        }
+
+        $code .= "{$scope} function {$node->name}{$this->revertAST($node->children[0])}";
+
+        if ($node->children[3] !== null) {
+            $code .= " : {$this->revertAST($node->children[3])}";
+        }
+
+        $code .= PHP_EOL
+            . $this->indent()
+            . '{'
+            . PHP_EOL;
+
+        ++$this->indentationLevel;
+
+        $code .= $this->revertAST($node->children[2]);
+
+        --$this->indentationLevel;
+
+        $code .= $this->indent()
+            . '}'
+            . PHP_EOL;
+
+        return $code;
     }
 
     private function methodCall(Node $node) : string
@@ -662,73 +754,38 @@ class AstReverter
 
     private function propDecl(Node $node) : string
     {
+        $code = '';
         $scope = '';
-        $docComment = $node->docComment ?? '';
 
-        // (abstract|final)?(public|protected|private)(static)?
+        if (isset($node->docComment)) {
+            $code .= $node->docComment . PHP_EOL . $this->indent();
+        }
+
+        // (public|protected|private)(static)?
         switch ($node->flags) {
             case \ast\flags\MODIFIER_PUBLIC:
                 $scope = 'public';
                 break;
-            case \ast\flags\MODIFIER_ABSTRACT | \ast\flags\MODIFIER_PUBLIC:
-                $scope = 'abstract public';
-                break;
-            case \ast\flags\MODIFIER_FINAL | \ast\flags\MODIFIER_PUBLIC:
-                $scope = 'final public';
-                break;
             case \ast\flags\MODIFIER_PUBLIC | \ast\flags\MODIFIER_STATIC:
                 $scope = 'public static';
-                break;
-            case \ast\flags\MODIFIER_ABSTRACT | \ast\flags\MODIFIER_PUBLIC | \ast\flags\MODIFIER_STATIC:
-                $scope = 'abstract public static';
-                break;
-            case \ast\flags\MODIFIER_FINAL | \ast\flags\MODIFIER_PUBLIC | \ast\flags\MODIFIER_STATIC:
-                $scope = 'final public static';
                 break;
             case \ast\flags\MODIFIER_PROTECTED:
                 $scope = 'protected';
                 break;
-            case \ast\flags\MODIFIER_ABSTRACT | \ast\flags\MODIFIER_PROTECTED:
-                $scope = 'abstract protected';
-                break;
-            case \ast\flags\MODIFIER_FINAL | \ast\flags\MODIFIER_PROTECTED:
-                $scope = 'final protected';
-                break;
             case \ast\flags\MODIFIER_PROTECTED | \ast\flags\MODIFIER_STATIC:
                 $scope = 'protected static';
-                break;
-            case \ast\flags\MODIFIER_ABSTRACT | \ast\flags\MODIFIER_PROTECTED | \ast\flags\MODIFIER_STATIC:
-                $scope = 'abstract protected static';
-                break;
-            case \ast\flags\MODIFIER_FINAL | \ast\flags\MODIFIER_PROTECTED | \ast\flags\MODIFIER_STATIC:
-                $scope = 'final protected static';
                 break;
             case \ast\flags\MODIFIER_PRIVATE:
                 $scope = 'private';
                 break;
-            case \ast\flags\MODIFIER_ABSTRACT | \ast\flags\MODIFIER_PRIVATE:
-                $scope = 'abstract private';
-                break;
-            case \ast\flags\MODIFIER_FINAL | \ast\flags\MODIFIER_PRIVATE:
-                $scope = 'final private';
-                break;
             case \ast\flags\MODIFIER_PRIVATE | \ast\flags\MODIFIER_STATIC:
                 $scope = 'private static';
-                break;
-            case \ast\flags\MODIFIER_ABSTRACT | \ast\flags\MODIFIER_PRIVATE | \ast\flags\MODIFIER_STATIC:
-                $scope = 'abstract private static';
-                break;
-            case \ast\flags\MODIFIER_FINAL | \ast\flags\MODIFIER_PRIVATE | \ast\flags\MODIFIER_STATIC:
-                $scope = 'final private static';
                 break;
             default:
                 assert(false, 'Unknown flag combination: ' . $node->flags);
         }
 
-        return $docComment
-            . PHP_EOL
-            . $this->indent()
-            . "{$scope} {$this->revertAST($node->children[0])};";
+        return "{$code}{$scope} {$this->revertAST($node->children[0])}";
     }
 
     private function propElem(Node $node) : string
@@ -755,6 +812,79 @@ class AstReverter
     private function staticProp(Node $node) : string
     {
         return $this->abstractProp($node, '::$');
+    }
+
+    private function stmtList(Node $node) : string
+    {if ($node === null)var_dump($node);
+        $code = '';
+
+        foreach ($node->children as $child) {
+            if ($child instanceof Node && $child->kind !== \ast\AST_STMT_LIST) {
+                $code .= $this->indent();
+            }
+
+            $code .= $this->revertAST($child);
+
+            if (
+                $child instanceof Node
+                && (
+                    $child->kind === \ast\AST_VAR
+                    || $child->kind === \ast\AST_PROP
+                    || $child->kind === \ast\AST_STATIC_PROP
+                )
+            ) {
+                $code .= $this->forceTerminateStatement($code);
+            } else {
+                $code .= $this->terminateStatement($code);
+            }
+        }
+
+        return $code;
+    }
+
+    private function switch(Node $node) : string
+    {
+        $code = "{$this->indent()}switch ({$this->revertAST($node->children[0])}) {" . PHP_EOL;
+
+        ++$this->indentationLevel;
+
+        $code .= $this->revertAST($node->children[1]);
+
+        --$this->indentationLevel;
+
+        return $code . "{$this->indent()}}";
+    }
+
+    private function switchCase(Node $node) : string
+    {
+        $code = $this->indent();
+
+        if ($node->children[0] === null) {
+            $code .= 'default:';
+        } else {
+            $code .= "case {$this->revertAST($node->children[0])}:";
+        }
+
+        $code .= PHP_EOL;
+
+        ++$this->indentationLevel;
+
+        $code .= $this->revertAST($node->children[1]);
+
+        --$this->indentationLevel;
+
+        return $code;
+    }
+
+    private function switchList(Node $node) : string
+    {
+        $code = '';
+
+        foreach ($node->children as $child) {
+            $code .= $this->revertAST($child);
+        }
+
+        return $code;
     }
 
     /**
