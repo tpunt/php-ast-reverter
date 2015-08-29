@@ -10,6 +10,8 @@ public $a;
  protected static $b = 1;
 private static $c;}
 <=======>
+<?php
+
 class Test
 {
     public $a;

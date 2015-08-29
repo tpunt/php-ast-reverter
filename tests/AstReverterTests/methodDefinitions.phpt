@@ -10,6 +10,8 @@ class Test
     public static abstract function method() : int {return 1;}
 }
 <=======>
+<?php
+
 class Test
 {
     /**
