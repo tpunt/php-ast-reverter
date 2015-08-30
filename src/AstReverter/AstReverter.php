@@ -1069,10 +1069,39 @@ class AstReverter
 
     private function magicConst($node)
     {
-        // $node = null when in namespace with braces
-        // ignore for now
+        $code = '';
 
-        return ''; // keep revertAST happy
+        switch ($node->flags) {
+            case T_LINE:
+                $code .= '__LINE__';
+                break;
+            case T_FILE:
+                $code .= '__FILE__';
+                break;
+            case T_DIR:
+                $code .= '__DIR__';
+                break;
+            case T_TRAIT_C:
+                $code .= '__TRAIT__';
+                break;
+            case T_METHOD_C:
+                $code .= '__METHOD__';
+                break;
+            case T_FUNC_C:
+                $code .= '__FUNCTION__';
+                break;
+            case T_NS_C:
+                $code .= '__NAMESPACE__';
+                break;
+            case T_CLASS_C:
+                $code .= '__CLASS__';
+                break;
+            default:
+                assert(false, 'Unknown flag in T_MAGIC_CONST found.');
+        }
+        // $node = null when in namespace with braces
+
+        return $code; // keep revertAST happy
     }
 
     private function method(Node $node) : string

@@ -31,6 +31,14 @@ if (1) {
 (unset) $a;
 $a = &$b;
 function &a(&$a){}
+__LINE__;
+__FILE__;
+__DIR__;
+__TRAIT__;
+__METHOD__;
+__FUNCTION__;
+__NAMESPACE__;
+__CLASS__;
 <=======>
 <?php
 
@@ -65,3 +73,11 @@ $a = &$b;
 function &a(&$a)
 {
 }
+__LINE__;
+__FILE__;
+__DIR__;
+__TRAIT__;
+__METHOD__;
+__FUNCTION__;
+__NAMESPACE__;
+__CLASS__;
