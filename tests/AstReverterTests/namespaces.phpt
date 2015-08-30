@@ -18,6 +18,8 @@ $b;
 };
 namespace test2 {
 $c;
+a\b();
+\a\b\c();
 };
 <=======>
 <?php
@@ -37,4 +39,6 @@ namespace test {
 };
 namespace test2 {
     $c;
+    a\b();
+    \a\b\c();
 };

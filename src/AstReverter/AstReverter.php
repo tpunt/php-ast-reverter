@@ -1182,7 +1182,13 @@ class AstReverter
 
     private function name(Node $node) : string
     {
-        return $node->children[0];
+        $code = '';
+
+        switch ($node->flags) {
+            case \ast\flags\NAME_FQ:
+                $code .= '\\';
+        }
+        return $code . $node->children[0];
     }
 
     private function nameList(Node $node) : string
