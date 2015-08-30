@@ -2,7 +2,7 @@
     "name": "tpunt/php-ast-reverter",
     "description": "Reverts an AST back into (somewhat) PSR-compliant code",
     "require": {
-        "php": ">=7.0"
+        "php": ">=7.0.0-dev"
     },
     "license": "MIT",
     "authors": [
