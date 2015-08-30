@@ -1,16 +1,17 @@
 # php-ast-reverter
-A package that reverts an abstract syntax tree (AST) produced by the php-ast
-extension back into (somewhat) PSR-compliant code. This enables for code
-pre-processing to be done.
+A tool that reverts an abstract syntax tree (AST) produced by the
+[php-ast](https://github.com/nikic/php-ast) extension back into (somewhat)
+PSR-compliant code. This enables for code preprocessing to be done.
 
 Requirements:
  - PHP 7
  - [php-ast](https://github.com/nikic/php-ast) extension (it should be
  compatible with both versions 10 and 20)
 
-This is still under development and as such the code base will need refactoring,
-commenting, and more thorough testing still. This is what I intend to work on
-in the coming days (along with my php preprocessing tool that uses this one ;).
+This tool is still under development and as such the code base will need
+refactoring, commenting, and more thorough testing. This is what I intend to
+work on in the coming weeks, along with my other tool (for php preprocessing)
+that will make use of this one.
 
 Example:
 ```php
