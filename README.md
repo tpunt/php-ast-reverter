@@ -1,6 +1,6 @@
 # php-ast-reverter
-A package reverts an abstract syntax tree (AST) produced by the php-ast
-extenion back into (somewhat) PSR-compliant code. This enables for code
+A package that reverts an abstract syntax tree (AST) produced by the php-ast
+extension back into (somewhat) PSR-compliant code. This enables for code
 pre-processing to be done.
 
 Requirements:

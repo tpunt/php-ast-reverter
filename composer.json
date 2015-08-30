@@ -1,6 +1,8 @@
 {
     "name": "tpunt/php-ast-reverter",
     "description": "Reverts an AST back into (somewhat) PSR-compliant code",
+    "keywords": ["abstract syntax tree", "AST", "parse tree"],
+    "homepage": "https://github.com/tpunt/php-ast-reverter",
     "require": {
         "php": ">=7.0.0-dev"
     },
@@ -10,7 +12,6 @@
             "name": "Thomas Punt",
         }
     ],
-    "minimum-stability": "dev",
     "autoload": {
         "files": ["src/autoloader.php"]
     }
