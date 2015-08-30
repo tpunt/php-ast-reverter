@@ -9,7 +9,7 @@ Requirements:
  compatible with both versions 10 and 20)
 
 Example:
-```
+```php
 <?php
 
 $code = <<<'end'
@@ -35,7 +35,7 @@ class ClassName extends AnotherClass implements AnInterface
     /**
      * Some useless constructor
      */
-    function __construct($arg = 1)
+    function __construct(int $arg = 1)
     {
         $this->prop = $arg;
     }
@@ -48,7 +48,7 @@ echo (new AstReverter\AstReverter)->getCode($ast);
 ```
 
 Output:
-```
+```php
 <?php
 
 /**
@@ -68,7 +68,7 @@ class ClassName extends AnotherClass implements AnInterface
     /**
      * Some useless constructor
      */
-    public function __construct($arg = 1)
+    public function __construct(int $arg = 1)
     {
         $this->prop = $arg;
     }
