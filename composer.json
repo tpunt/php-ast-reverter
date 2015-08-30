@@ -4,7 +4,8 @@
     "keywords": ["abstract syntax tree", "AST", "parse tree"],
     "homepage": "https://github.com/tpunt/php-ast-reverter",
     "require": {
-        "php": ">=7.0.0-dev"
+        "php": ">=7.0",
+        "ext-ast": "*"
     },
     "license": "MIT",
     "authors": [
