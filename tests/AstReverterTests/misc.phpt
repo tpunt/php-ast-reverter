@@ -29,6 +29,8 @@ if (1) {
 (array) $a;
 (object) $a;
 (unset) $a;
+$a = &$b;
+function &a(&$a){}
 <=======>
 <?php
 
@@ -59,3 +61,7 @@ if (1) {
 (array) $a;
 (object) $a;
 (unset) $a;
+$a = &$b;
+function &a(&$a)
+{
+}
