@@ -9,15 +9,14 @@ error_reporting(-1);
 
 class AstReverter
 {
-    private $fromFile = true;
     private $indentationLevel = 0;
 
     const INDENTATION_CHAR = ' ';
     const INDENTATION_SIZE = 4;
 
-    public function __construct($fromFile = true)
+    public function __construct()
     {
-        $this->fromFile = $fromFile;
+        // nothing to do
     }
 
     private function revertAST($node) : string
@@ -964,11 +963,11 @@ class AstReverter
         return $code;
     }
 
-    public function getCode(Node $node) : string
+    public function getCode(Node $node, $fromFile = true) : string
     {
         $code = '';
 
-        if ($this->fromFile) {
+        if ($fromFile) {
             $code .= '<?php' . PHP_EOL . PHP_EOL;
         }
 
