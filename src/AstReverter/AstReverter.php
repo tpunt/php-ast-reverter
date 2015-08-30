@@ -309,7 +309,13 @@ class AstReverter
         if ($node->children[1] === null) {
             $code .= $this->revertAST($node->children[0]);
         } else {
-            $code .= "{$this->revertAST($node->children[1])} => {$this->revertAST($node->children[0])}";
+            $code .= "{$this->revertAST($node->children[1])} => ";
+
+            if ($node->flags === \ast\flags\PARAM_REF) {
+                $code .= '&';
+            }
+
+            $code .= $this->revertAST($node->children[0]);
         }
 
         return $code;
