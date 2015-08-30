@@ -8,6 +8,10 @@ Requirements:
  - [php-ast](https://github.com/nikic/php-ast) extension (it should be
  compatible with both versions 10 and 20)
 
+This is still under development and as such the code base will need refactoring,
+commenting, and more thorough testing still. This is what I intend to work on
+in the coming days (along with my php preprocessing tool that uses this one ;).
+
 Example:
 ```php
 <?php
