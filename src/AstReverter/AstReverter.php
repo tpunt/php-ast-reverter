@@ -176,6 +176,8 @@ class AstReverter
                 return $this->propElem($node);
             case \ast\AST_RETURN:
                 return $this->return($node);
+            case \ast\AST_SHELL_EXEC:
+                return $this->shellExec($node);
             case \ast\AST_SILENCE:
                 return $this->silence($node);
             case \ast\AST_STATIC:
@@ -212,6 +214,8 @@ class AstReverter
                 return $this->unaryPlus($node);
             case \ast\AST_UNPACK:
                 return $this->unpack($node);
+            case \ast\AST_UNSET:
+                return $this->unset($node);
             case \ast\AST_USE:
                 return $this->use($node);
             case \ast\AST_USE_ELEM:
@@ -1450,6 +1454,15 @@ class AstReverter
         return 'return ' . $this->revertAST($node->children[0]);
     }
 
+    private function shellExec(Node $node) : string
+    {
+        // ugly hack to remove double quotes
+        $expr = substr($this->revertAST($node->children[0]), 1, -1);
+        $code = '`' . $expr . '`';
+
+        return $code;
+    }
+
     private function silence(Node $node) : string
     {
         return '@' . $this->revertAST($node->children[0]);
@@ -1708,6 +1721,11 @@ class AstReverter
     private function unpack(Node $node) : string
     {
         return '...' . $this->revertAST($node->children[0]);
+    }
+
+    private function unset(Node $node) : string
+    {
+        return 'unset('. $this->revertAST($node->children[0]) . ')';
     }
 
     private function use(Node $node, $setUse = true) : string

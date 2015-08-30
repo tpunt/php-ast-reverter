@@ -40,6 +40,7 @@ __FUNCTION__;
 __NAMESPACE__;
 __CLASS__;
 (new SomeClass)->invokeMethod();
+`a$a`;
 <=======>
 <?php
 
@@ -83,3 +84,4 @@ __FUNCTION__;
 __NAMESPACE__;
 __CLASS__;
 (new SomeClass())->invokeMethod();
+`a{$a}`;
