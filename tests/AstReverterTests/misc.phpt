@@ -39,6 +39,7 @@ __METHOD__;
 __FUNCTION__;
 __NAMESPACE__;
 __CLASS__;
+(new SomeClass)->invokeMethod();
 <=======>
 <?php
 
@@ -81,3 +82,4 @@ __METHOD__;
 __FUNCTION__;
 __NAMESPACE__;
 __CLASS__;
+(new SomeClass())->invokeMethod();

@@ -4,7 +4,8 @@ namespace AstReverter;
 
 use ast\Node;
 
-ini_set('assert.exceptions', 1);
+ini_set('assert.exception', 1);
+error_reporting(-1);
 
 class AstReverter
 {
@@ -244,11 +245,15 @@ class AstReverter
             $code .= $this->revertAST($node->children[0]);
         }
 
-        $code .= $op
-            . ($node->children[1] instanceof Node
-                ? $this->revertAST($node->children[1])
-                : $node->children[1])
-            . $this->revertAST($node->children[2]);
+        $code .= $op;
+
+        if ($node->children[1] instanceof Node) {
+            $code .= $this->revertAST($node->children[1]);
+        } else {
+            $code .= $node->children[1];
+        }
+
+        $code .= $this->revertAST($node->children[2]);
 
         return $code;
     }
@@ -259,6 +264,7 @@ class AstReverter
      */
     private function abstractProp(Node $node, string $op) : string
     {
+        $code = '';
         $openBrace = '';
         $closeBrace = '';
 
@@ -268,13 +274,19 @@ class AstReverter
             $closeBrace = '}';
         }
 
-        return $this->revertAST($node->children[0])
+        $code .= $this->revertAST($node->children[0])
             . $op
-            . $openBrace
-            . ($node->children[1] instanceof Node
-                ? $this->revertAST($node->children[1])
-                : $node->children[1])
-            . $closeBrace;
+            . $openBrace;
+
+        if ($node->children[1] instanceof Node) {
+            $code .= $this->revertAST($node->children[1]);
+        } else {
+            $code .= $node->children[1];
+        }
+
+        $code .= $closeBrace;
+
+        return $code;
     }
 
     private function and(Node $node) : string
@@ -299,7 +311,9 @@ class AstReverter
             $code .= $this->commaSeparatedValues($node);
         }
 
-        return $code . ']';
+        $code .= ']';
+
+        return $code;
     }
 
     private function arrayElem(Node $node) : string
@@ -371,12 +385,13 @@ class AstReverter
                 $op = '<<=';
                 break;
             default:
-                var_dump($node->flags);die('aaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
                 assert(false, "Unknown flag ({$node->flags}) for AST_ASSIGN_OP found.");
         }
 
         return $this->revertAST($node->children[0])
-            . " {$op} "
+            . ' '
+            . $op
+            . ' '
             . $this->revertAST($node->children[1])
             . ';';
     }
@@ -464,7 +479,9 @@ class AstReverter
         }
 
         return $this->revertAST($node->children[0])
-            . " {$op} "
+            . ' '
+            . $op
+            . ' '
             . $this->revertAST($node->children[1]);
     }
 
@@ -546,7 +563,10 @@ class AstReverter
         return $code;
     }
 
-    private function class(Node $node) : string
+    /**
+     * The second argument is for anonymous classes.
+     */
+    private function class(Node $node, Node $args = null) : string
     {
         $code = '';
 
@@ -575,23 +595,36 @@ class AstReverter
             case 0:
                 // no flag used
                 break;
+            case 256: // no flag constant for anonymous classes yet
+                // anonymous class
+                break;
             default:
-                assert(false, "Unknown flag ({$node->flags}) for AST_CLASS found.");
+                // assert(false, "unregister_tick_function(function_name)own flag ({$node->flags}) for AST_CLASS found.");
         }
 
         if ($node->children[0] !== null) {
-            $extends .= " extends {$this->revertAST($node->children[0])}";
+            $extends .= ' extends ' . $this->revertAST($node->children[0]);
         }
 
         if ($node->children[1] !== null) {
-            $implements .= " implements {$this->revertAST($node->children[1])}";
+            $implements .= ' implements ' . $this->revertAST($node->children[1]);
         }
 
-        $code .= "{$modifier}{$type} {$node->name}{$extends}{$implements}"
-            . PHP_EOL
-            . $this->indent()
-            . '{'
-            . PHP_EOL;
+        $code .= $modifier . $type . ' ' . $node->name;
+
+        if ($args !== null) {
+            $code .= $this->revertAST($args);
+        }
+
+        $code .= $extends . $implements;
+
+        if ($args === null) {
+            $code .= PHP_EOL . $this->indent();
+        } else {
+            $code .= ' ';
+        }
+        
+        $code .= '{' . PHP_EOL;
 
         ++$this->indentationLevel;
 
@@ -599,16 +632,22 @@ class AstReverter
 
         --$this->indentationLevel;
 
-        return $code . $this->indent() . '}';
+        $code .= $this->indent() . '}';
+
+        return $code;
     }
 
     private function classConst(Node $node) : string
     {
-        return $this->revertAST($node->children[0])
-            . '::'
-            . ($node->children[1] instanceof Node
-                ? $this->revertAST($node->children[1])
-                : $node->children[1]);
+        $code = $this->revertAST($node->children[0]) . '::';
+
+        if ($node->children[1] instanceof Node) {
+            $code .= $this->revertAST($node->children[1]);
+        } else {
+            $code .= $node->children[1];
+        }
+
+        return $code;
     }
 
     private function classConstDecl(Node $node) : string
@@ -618,7 +657,7 @@ class AstReverter
 
     private function clone(Node $node) : string
     {
-        return "clone {$this->revertAST($node->children[0])}";
+        return 'clone ' . $this->revertAST($node->children[0]);
     }
 
     private function closure(Node $node) : string
@@ -636,7 +675,7 @@ class AstReverter
         }
 
         if ($node->children[3] !== null) {
-            $code .= " : {$this->revertAST($node->children[3])}";
+            $code .= ' : ' . $this->revertAST($node->children[3]);
         }
 
         $code .= ' {' . PHP_EOL;
@@ -647,7 +686,9 @@ class AstReverter
 
         --$this->indentationLevel;
 
-        return $code . $this->indent() . '};';
+        $code .= $this->indent() . '};';
+
+        return $code;
     }
 
     private function closureVar(Node $node) : string
@@ -658,7 +699,9 @@ class AstReverter
             $code .= '&';
         }
 
-        return $code . '$' . $node->children[0];
+        $code .= '$' . $node->children[0];
+
+        return $code;
     }
 
     private function coalesce(Node $node) : string
@@ -715,7 +758,9 @@ class AstReverter
 
     private function constElem(Node $node) : string
     {
-        return "{$node->children[0]} = {$this->revertAST($node->children[1])}";
+        return $node->children[0]
+            . ' = '
+            . $this->revertAST($node->children[1]);
     }
 
     private function continue(Node $node) : string
@@ -723,7 +768,7 @@ class AstReverter
         $code = 'continue';
 
         if ($node->children[0] !== null) {
-            $code .= " {$this->revertAST($node->children[0])}";
+            $code .= ' ' . $this->revertAST($node->children[0]);
         }
 
         return $code;
@@ -759,21 +804,22 @@ class AstReverter
 
         --$this->indentationLevel;
 
-        return $code
-            . $this->indent()
+        $code .= $this->indent()
             . '} while ('
             . $this->revertAST($node->children[1])
             . ')';
+
+        return $code;
     }
 
     private function echo(Node $node) : string
     {
-        return "echo {$this->revertAST($node->children[0])}";
+        return 'echo ' . $this->revertAST($node->children[0]);
     }
 
     private function empty(Node $node) : string
     {
-        return "empty({$this->revertAST($node->children[0])})";
+        return 'empty(' . $this->revertAST($node->children[0]) . ')';
     }
 
     private function encapsList(Node $node) : string
@@ -811,14 +857,25 @@ class AstReverter
 
     private function for(Node $node) : string
     {
-        $code = 'for ('
-            . $this->commaSeparatedValues($node->children[0])
-            . '; '
-            . $this->commaSeparatedValues($node->children[1])
-            . '; '
-            . $this->commaSeparatedValues($node->children[2])
-            . ') {'
-            . PHP_EOL;
+        $code = 'for (';
+
+        if ($node->children[0] !== null) {
+            $code .= $this->revertAST($node->children[0]);
+        }
+
+        $code .= ';';
+
+        if ($node->children[1] !== null) {
+            $code .= ' ' . $this->revertAST($node->children[1]);
+        }
+
+        $code .= ';';
+
+        if ($node->children[2] !== null) {
+            $code .= ' ' . $this->revertAST($node->children[2]);
+        }
+
+        $code .= ') {' . PHP_EOL;
 
         ++$this->indentationLevel;
 
@@ -826,7 +883,9 @@ class AstReverter
 
         --$this->indentationLevel;
 
-        return $code . $this->indent() . '}';
+        $code .= $this->indent() . '}';
+
+        return $code;
     }
 
     /**
@@ -863,7 +922,9 @@ class AstReverter
 
         --$this->indentationLevel;
 
-        return "{$code}{$this->indent()}}";
+        $code .= $this->indent() . '}';
+
+        return $code;
     }
 
     private function funcDecl(Node $node) : string
@@ -883,13 +944,10 @@ class AstReverter
         $code .= $node->name . $this->revertAST($node->children[0]);
 
         if ($node->children[3] !== null) {
-            $code .= " : {$this->revertAST($node->children[3])}";
+            $code .= ' : ' . $this->revertAST($node->children[3]);
         }
 
-        $code .= PHP_EOL
-            . $this->indent()
-            . '{'
-            . PHP_EOL;
+        $code .= PHP_EOL . $this->indent() . '{' . PHP_EOL;
 
         ++$this->indentationLevel;
 
@@ -910,17 +968,19 @@ class AstReverter
             $code .= '<?php' . PHP_EOL . PHP_EOL;
         }
 
-        return $code . $this->revertAST($node) . PHP_EOL;
+        $code .= $this->revertAST($node) . PHP_EOL;
+
+        return $code;
     }
 
     public function global(Node $node) : string
     {
-        return "global {$this->revertAST($node->children[0])}";
+        return 'global ' . $this->revertAST($node->children[0]);
     }
 
     private function goto(Node $node) : string
     {
-        return "goto {$node->children[0]}";
+        return 'goto ' . $node->children[0];
     }
 
     /**
@@ -945,11 +1005,13 @@ class AstReverter
 
     private function groupUse(Node $node) : string
     {
-        $code = "{$this->useAbstract($node)}{$node->children[0]}\{";
+        $code = $this->useAbstract($node) . $node->children[0] . '\{';
 
         $code .= $this->use($node->children[1], false); // a hack to not show 'use ' in block
 
-        return $code . '};';
+        $code .= '};';
+
+        return $code;
     }
 
     private function haltCompiler(Node $node) : string
@@ -1054,56 +1116,43 @@ class AstReverter
 
     private function isset(Node $node) : string
     {
-        return "isset({$this->revertAST($node->children[0])})";
+        return 'isset(' . $this->revertAST($node->children[0]) . ')';
     }
 
     private function label(Node $node) : string
     {
-        return "{$node->children[0]}:" . PHP_EOL;
+        return $node->children[0] . ':' . PHP_EOL;
     }
 
     private function list(Node $node) : string
     {
-        return 'list('
-            . $this->commaSeparatedValues($node)
-            . ')';
+        return 'list(' . $this->commaSeparatedValues($node) . ')';
     }
 
-    private function magicConst($node)
+    private function magicConst(Node $node)
     {
-        $code = '';
+        // $node = null when in namespace with braces ?
 
         switch ($node->flags) {
             case T_LINE:
-                $code .= '__LINE__';
-                break;
+                return '__LINE__';
             case T_FILE:
-                $code .= '__FILE__';
-                break;
+                return '__FILE__';
             case T_DIR:
-                $code .= '__DIR__';
-                break;
+                return '__DIR__';
             case T_TRAIT_C:
-                $code .= '__TRAIT__';
-                break;
+                return '__TRAIT__';
             case T_METHOD_C:
-                $code .= '__METHOD__';
-                break;
+                return '__METHOD__';
             case T_FUNC_C:
-                $code .= '__FUNCTION__';
-                break;
+                return '__FUNCTION__';
             case T_NS_C:
-                $code .= '__NAMESPACE__';
-                break;
+                return '__NAMESPACE__';
             case T_CLASS_C:
-                $code .= '__CLASS__';
-                break;
+                return '__CLASS__';
             default:
                 assert(false, "Unknown flag ({$node->flags}) for T_MAGIC_CONST found.");
         }
-        // $node = null when in namespace with braces
-
-        return $code; // keep revertAST happy
     }
 
     private function method(Node $node) : string
@@ -1175,10 +1224,13 @@ class AstReverter
                 assert(false, "Unknown flag(s) ({$node->flags}) for AST_METHOD found.");
         }
 
-        $code .= "{$scope} function {$node->name}{$this->revertAST($node->children[0])}";
+        $code .= $scope
+            . ' function '
+            . $node->name
+            . $this->revertAST($node->children[0]);
 
         if ($node->children[3] !== null) {
-            $code .= " : {$this->revertAST($node->children[3])}";
+            $code .= ' : ' . $this->revertAST($node->children[3]);
         }
 
         $code .= PHP_EOL
@@ -1218,8 +1270,12 @@ class AstReverter
         switch ($node->flags) {
             case \ast\flags\NAME_FQ:
                 $code .= '\\';
+            // ignore NAME_NOT_FQ
         }
-        return $code . $node->children[0];
+
+        $code .= $node->children[0];
+
+        return $code;
     }
 
     private function nameList(Node $node) : string
@@ -1252,10 +1308,17 @@ class AstReverter
 
     private function new(Node $node) : string
     {
-        $code = 'new ' . $this->revertAST($node->children[0]);
+        $code = 'new ';
 
-        if ($node->children[1] !== null) {
-            $code .= $this->revertAST($node->children[1]);
+        if ($node->children[0]->kind === \ast\AST_CLASS) {
+            $code .= $this->class($node->children[0], $node->children[1])
+                . ';';
+        } else {
+            $code .= $this->revertAST($node->children[0]);
+
+            if ($node->children[1] !== null) {
+                $code .= $this->revertAST($node->children[1]);
+            }
         }
 
         return $code;
@@ -1282,13 +1345,13 @@ class AstReverter
         }
 
         if ($node->children[0] !== null) {
-            $code .= "{$this->revertAST($node->children[0])} ";
+            $code .= $this->revertAST($node->children[0]) . ' ';
         }
 
-        $code .= "{$modifier}\${$node->children[1]}";
+        $code .= $modifier . '$' . $node->children[1];
 
         if ($node->children[2] !== null) {
-            $code .= " = {$this->revertAST($node->children[2])}";
+            $code .= ' = ' . $this->revertAST($node->children[2]);
         }
 
         return $code;
@@ -1323,13 +1386,7 @@ class AstReverter
 
     private function print(Node $node) : string
     {
-        $code = 'print ';
-
-        if ($node->children[0] instanceof Node) {
-            $code .= $this->revertAST($node->children[0]);
-        } else {
-            $code .= "{$this->revertAST($node->children[0])}";
-        }
+        $code = 'print ' . $this->revertAST($node->children[0]);
 
         return $code;
     }
@@ -1372,41 +1429,46 @@ class AstReverter
                 assert(false, "Unknown flag(s) ({$node->flags}) for AST_PROP_DECL found.");
         }
 
-        return "{$code}{$scope} {$this->revertAST($node->children[0])}";
+        $code .= $scope . ' ' . $this->revertAST($node->children[0]);
+
+        return $code;
     }
 
     private function propElem(Node $node) : string
     {
-        $default = '';
+        $code = '$' . $node->children[0];
 
         if ($node->children[1] !== null) {
-            $default .= " = {$this->revertAST($node->children[1])}";
+            $code .= ' = ' . $this->revertAST($node->children[1]);
         }
 
-        return "\${$node->children[0]}{$default}";
+        return $code;
     }
 
     private function return(Node $node) : string
     {
-        return "return {$this->revertAST($node->children[0])};";
+        return 'return ' . $this->revertAST($node->children[0]);
     }
 
     private function silence(Node $node) : string
     {
-        return "@{$this->revertAST($node->children[0])}";
+        return '@' . $this->revertAST($node->children[0]);
     }
 
     private function sanitiseString(string $string) : string
     {
-        return strtr($string, ['$' => '\\$', '\\' => '\\\\', "\n" => '\n', '"' => '\"']);
+        return strtr(
+            $string,
+            ['$' => '\\$', '\\' => '\\\\', "\n" => '\n', '"' => '\"']
+        );
     }
 
     private function static(Node $node) : string
     {
-        $code = "static \${$node->children[0]}";
+        $code = 'static $' . $node->children[0];
 
         if ($node->children[1] !== null) {
-            $code .= " = {$this->revertAST($node->children[1])}";
+            $code .= ' = ' . $this->revertAST($node->children[1]);
         }
 
         return $code;
@@ -1456,7 +1518,10 @@ class AstReverter
 
     private function switch(Node $node) : string
     {
-        $code = "switch ({$this->revertAST($node->children[0])}) {" . PHP_EOL;
+        $code = 'switch ('
+            . $this->revertAST($node->children[0])
+            . ') {'
+            . PHP_EOL;
 
         ++$this->indentationLevel;
 
@@ -1464,7 +1529,9 @@ class AstReverter
 
         --$this->indentationLevel;
 
-        return $code . "{$this->indent()}}";
+        $code .= $this->indent() . '}';
+
+        return $code;
     }
 
     private function switchCase(Node $node) : string
@@ -1474,7 +1541,7 @@ class AstReverter
         if ($node->children[0] === null) {
             $code .= 'default:';
         } else {
-            $code .= "case {$this->revertAST($node->children[0])}:";
+            $code .= 'case ' . $this->revertAST($node->children[0]) . ':';
         }
 
         $code .= PHP_EOL;
@@ -1519,7 +1586,7 @@ class AstReverter
 
     private function throw(Node $node) : string
     {
-        return "throw {$this->revertAST($node->children[0])}";
+        return 'throw ' . $this->revertAST($node->children[0]);
     }
 
     private function traitAdaptations(Node $node) : string
@@ -1538,8 +1605,7 @@ class AstReverter
 
     private function traitAlias(Node $node) : string
     {
-        $code = $this->revertAST($node->children[0])
-            . ' as ';
+        $code = $this->revertAST($node->children[0]) . ' as ';
 
         switch ($node->flags) {
             case \ast\flags\MODIFIER_PUBLIC:
@@ -1551,9 +1617,14 @@ class AstReverter
             case \ast\flags\MODIFIER_PRIVATE:
                 $code .= 'private ';
                 break;
+            default:
+                // if there's no flag, then the value will be 0
+                // assert(false, "Unknown flag ({$node->flags}) for AST_TRAIT_ALIAS found.");
         }
 
-        return $code . $node->children[1];
+        $code .= $node->children[1];
+
+        return $code;
     }
 
     private function traitPrecedence(Node $node) : string
@@ -1606,7 +1677,7 @@ class AstReverter
 
     private function unaryMinus(Node $node) : string
     {
-        return "-{$this->revertAST($node->children[0])}";
+        return '-' . $this->revertAST($node->children[0]);
     }
 
     private function unaryOp(Node $node) : string
@@ -1636,7 +1707,7 @@ class AstReverter
 
     private function unpack(Node $node) : string
     {
-        return "...{$this->revertAST($node->children[0])}";
+        return '...' . $this->revertAST($node->children[0]);
     }
 
     private function use(Node $node, $setUse = true) : string
@@ -1679,7 +1750,7 @@ class AstReverter
         $code = $node->children[0];
 
         if ($node->children[1] !== null) {
-            $code .= " as {$node->children[1]}";
+            $code .= ' as ' . $node->children[1];
         }
 
         return $code;
@@ -1716,17 +1787,22 @@ class AstReverter
             if (preg_match('~^[_a-z][_a-z0-9]*$~i', $varName)) {
                 return $code . $varName;
             } else {
-                return $code . "{'{$varName}'}";
+                return $code . "{'" . $varName . "'}";
             }
             
         }
 
-        return "{$code}{{$this->revertAST($node->children[0])}}";
+        $code .= '{' . $this->revertAST($node->children[0]) . '}';
+
+        return $code;
     }
 
     private function while(Node $node) : string
     {
-        $code = "while ({$this->revertAST($node->children[0])}) {" . PHP_EOL;
+        $code = 'while ('
+            . $this->revertAST($node->children[0])
+            . ') {'
+            . PHP_EOL;
 
         ++$this->indentationLevel;
 
@@ -1734,16 +1810,18 @@ class AstReverter
 
         --$this->indentationLevel;
 
-        return $code . $this->indent() . '}';
+        $code .= $this->indent() . '}';
+
+        return $code;
     }
 
     private function yield(Node $node) : string
     {
-        return "yield {$this->revertAST($node->children[0])}";
+        return 'yield ' . $this->revertAST($node->children[0]);
     }
 
     private function yieldFrom(Node $node) : string
     {
-        return "yield from {$this->revertAST($node->children[0])}";
+        return 'yield from ' . $this->revertAST($node->children[0]);
     }
 }
