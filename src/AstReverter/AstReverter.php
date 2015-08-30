@@ -1363,7 +1363,7 @@ class AstReverter
 
     private function sanitiseString(string $string) : string
     {
-        return strtr($string, ['\\' => '\\\\', "\n" => '\n', '"' => '\"']);
+        return strtr($string, ['$' => '\\$', '\\' => '\\\\', "\n" => '\n', '"' => '\"']);
     }
 
     private function static(Node $node) : string
