@@ -13,7 +13,16 @@ refactoring, commenting, and more thorough testing. This is what I intend to
 work on in the coming weeks, along with my other tool (for php preprocessing)
 that will make use of this one.
 
-Example:
+## Installation
+
+### Composer
+```
+composer require tpunt/php-ast-reverter
+```
+
+## Example
+
+Running the following code snippet:
 ```php
 <?php
 
@@ -52,7 +61,7 @@ $ast = ast\parse_code($code);
 echo (new AstReverter\AstReverter)->getCode($ast);
 ```
 
-Output:
+Will output:
 ```php
 <?php
 
