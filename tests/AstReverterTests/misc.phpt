@@ -41,6 +41,18 @@ __NAMESPACE__;
 __CLASS__;
 (new SomeClass)->invokeMethod();
 `a$a`;
+$a .= "a";
+$a += 1;
+$a -= 1;
+$a /= 1;
+$a *= 1;
+$a ^= 1;
+$a |= 1;
+$a &= 1;
+$a %= 1;
+$a **= 1;
+$a <<= 1;
+$a >>= 1;
 <=======>
 <?php
 
@@ -85,3 +97,15 @@ __NAMESPACE__;
 __CLASS__;
 (new SomeClass())->invokeMethod();
 `a{$a}`;
+$a .= "a";
+$a += 1;
+$a -= 1;
+$a /= 1;
+$a *= 1;
+$a ^= 1;
+$a |= 1;
+$a &= 1;
+$a %= 1;
+$a **= 1;
+$a <<= 1;
+$a >>= 1;

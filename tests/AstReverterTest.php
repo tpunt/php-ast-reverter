@@ -5,9 +5,17 @@ use function ast\parse_code;
 
 class AstReverterTest extends \PHPUnit_Framework_TestCase
 {
-    private $astReverter = null;
+    public function testAstReverterV10()
+    {
+        $this->abstractTestAstReverter(10);
+    }
 
-    public function testAstReverter()
+    public function testAstReverterV20()
+    {
+        $this->abstractTestAstReverter(20);
+    }
+
+    private function abstractTestAstReverter($version)
     {
         $testsDir = __DIR__ . '/AstReverterTests/';
         $dirIter = new \DirectoryIterator($testsDir);
@@ -28,7 +36,7 @@ class AstReverterTest extends \PHPUnit_Framework_TestCase
             $input = trim($test[1]);
             $expected = ltrim($test[2]) . PHP_EOL;
 
-            $this->assertEquals($expected, $this->astReverter->getCode(parse_code($input)), $name);
+            $this->assertEquals($expected, $this->astReverter->getCode(parse_code($input, $version)), $name);
         }
     }
 }

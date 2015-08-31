@@ -350,42 +350,55 @@ class AstReverter
         $op = '';
 
         switch ($node->flags) {
+            // ASSIGN_* for version 10 compatibility
+            // BINARY_* for version 20 compatibility
             case \ast\flags\ASSIGN_BITWISE_OR:
+            case \ast\flags\BINARY_BITWISE_OR:
                 $op = '|=';
                 break;
             case \ast\flags\ASSIGN_BITWISE_AND:
+            case \ast\flags\BINARY_BITWISE_AND:
                 $op = '&=';
                 break;
             case \ast\flags\ASSIGN_BITWISE_XOR:
+            case \ast\flags\BINARY_BITWISE_XOR:
                 $op = '^=';
                 break;
-            case \ast\flags\ASSIGN_CONCAT: // version 10 = int(8) ; version 20 = int(30)
-            case 8: // version 20 compatible
+            case \ast\flags\ASSIGN_CONCAT:
+            case \ast\flags\BINARY_CONCAT: 
                 $op = '.=';
                 break;
             case \ast\flags\ASSIGN_ADD:
+            case \ast\flags\BINARY_ADD:
                 $op = '+=';
                 break;
             case \ast\flags\ASSIGN_SUB:
+            case \ast\flags\BINARY_SUB:
                 $op = '-=';
                 break;
             case \ast\flags\ASSIGN_MUL:
+            case \ast\flags\BINARY_MUL:
                 $op = '*=';
                 break;
             case \ast\flags\ASSIGN_DIV:
+            case \ast\flags\BINARY_DIV:
                 $op = '/=';
                 break;
             case \ast\flags\ASSIGN_MOD:
+            case \ast\flags\BINARY_MOD:
                 $op = '%=';
                 break;
             case \ast\flags\ASSIGN_POW:
+            case \ast\flags\BINARY_POW:
                 $op = '**=';
                 break;
             case \ast\flags\ASSIGN_SHIFT_LEFT:
-                $op = '>>=';
+            case \ast\flags\BINARY_SHIFT_LEFT:
+                $op = '<<=';
                 break;
             case \ast\flags\ASSIGN_SHIFT_RIGHT:
-                $op = '<<=';
+            case \ast\flags\BINARY_SHIFT_RIGHT:
+                $op = '>>=';
                 break;
             default:
                 assert(false, "Unknown flag ({$node->flags}) for AST_ASSIGN_OP found.");
