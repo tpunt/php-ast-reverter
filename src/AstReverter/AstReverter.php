@@ -5,7 +5,6 @@ namespace AstReverter;
 use ast\Node;
 
 ini_set('assert.exception', 1);
-error_reporting(-1);
 
 class AstReverter
 {
@@ -1777,7 +1776,26 @@ class AstReverter
 
     private function useElem(Node $node) : string
     {
-        $code = $node->children[0];
+        $code = '';
+
+        switch ($node->flags) {
+            case T_CONST:
+                $code .= 'const ';
+                break;
+            case T_FUNCTION:
+                $code .= 'function ';
+                break;
+            case T_CLASS:
+                // nothing to do
+                break;
+            case 0:
+                // denotes no flags are set
+                break;
+            default:
+                assert(false, "Unknown flag ({$node->flags}) for AST_USE_ELEM found.");
+        }
+
+        $code .= $node->children[0];
 
         if ($node->children[1] !== null) {
             $code .= ' as ' . $node->children[1];

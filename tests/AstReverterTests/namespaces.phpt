@@ -11,6 +11,7 @@ use function a\b\C as D;
 use a\b\{C as D, E};
 use const a\b\{C as D, E};
 use function a\b\{C as D, E};
+use app\{ClassName, const CONST_NAME, function funcName};
 
 namespace test {
 $a;
@@ -33,6 +34,7 @@ use function a\b\C as D;
 use a\b\{C as D, E};
 use const a\b\{C as D, E};
 use function a\b\{C as D, E};
+use app\{ClassName, const CONST_NAME, function funcName};
 namespace test {
     $a;
     $b;
