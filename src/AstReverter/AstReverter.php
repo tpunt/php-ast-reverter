@@ -975,7 +975,7 @@ class AstReverter
         return $code;
     }
 
-    public function getCode(Node $node, $fromFile = true) : string
+    public function getCode(Node $node, bool $fromFile = true) : string
     {
         $code = '';
 
