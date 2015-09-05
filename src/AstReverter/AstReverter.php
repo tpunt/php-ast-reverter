@@ -462,6 +462,12 @@ class AstReverter
             case \ast\flags\BINARY_BOOL_XOR:
                 $op = 'xor';
                 break;
+            case \ast\flags\BINARY_BOOL_OR:
+                $op = '||';
+                break;
+            case \ast\flags\BINARY_BOOL_AND:
+                $op = '&&';
+                break;
             case \ast\flags\BINARY_IS_IDENTICAL:
                 $op = '===';
                 break;
@@ -1474,6 +1480,7 @@ class AstReverter
         return $code;
     }
 
+    // for version 10 compatibility
     private function silence(Node $node) : string
     {
         return '@' . $this->revertAST($node->children[0]);
@@ -1699,6 +1706,7 @@ class AstReverter
         }
     }
 
+    // for version 10 compatibility
     private function unaryMinus(Node $node) : string
     {
         return '-' . $this->revertAST($node->children[0]);
@@ -1715,6 +1723,15 @@ class AstReverter
             case \ast\flags\UNARY_BITWISE_NOT:
                 $code .= '~';
                 break;
+            case \ast\flags\UNARY_SILENCE:
+                $code .= '@';
+                break;
+            case \ast\flags\UNARY_PLUS:
+                $code .= '+';
+                break;
+            case \ast\flags\UNARY_MINUS:
+                $code .= '-';
+                break;
             default:
                 assert(false, "Unknown flag ({$node->flags}) for AST_UNARY_OP found.");
         }
@@ -1724,6 +1741,7 @@ class AstReverter
         return $code;
     }
 
+    // for version 10 compatibility
     private function unaryPlus(Node $node) : string
     {
         return $this->revertAST($node->children[0]); // removes the unary plus
