@@ -1475,7 +1475,13 @@ class AstReverter
 
     private function return(Node $node) : string
     {
-        return 'return ' . $this->revertAST($node->children[0]);
+        $code = 'return';
+
+        if ($node->children[0] !== null) {
+            $code .= ' ' . $this->revertAST($node->children[0]);
+        }
+
+        return $code;
     }
 
     private function shellExec(Node $node) : string

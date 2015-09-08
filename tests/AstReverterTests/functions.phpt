@@ -6,6 +6,7 @@ function test(int $a=[],$b=null,StdClass ...$c){}
 if (1){
 function &test(){}}
 function a(){static $a =a();}
+function a(){return;}
 <=======>
 <?php
 
@@ -20,4 +21,8 @@ if (1) {
 function a()
 {
     static $a = a();
+}
+function a()
+{
+    return;
 }
