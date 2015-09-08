@@ -619,7 +619,7 @@ class AstReverter
                 // anonymous class
                 break;
             default:
-                // assert(false, "unregister_tick_function(function_name)own flag ({$node->flags}) for AST_CLASS found.");
+                // assert(false, "Unknown flag ({$node->flags}) for AST_CLASS found.");
         }
 
         if ($node->children[0] !== null) {
@@ -627,7 +627,13 @@ class AstReverter
         }
 
         if ($node->children[1] !== null) {
-            $implements .= ' implements ' . $this->revertAST($node->children[1]);
+            if ($type === 'interface') {
+                $implements .= ' extends ';
+            } else {
+                $implements .= ' implements ';
+            }
+
+            $implements .= $this->revertAST($node->children[1]);
         }
 
         $code .= $modifier . $type . ' ' . $node->name;

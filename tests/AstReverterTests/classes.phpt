@@ -23,6 +23,8 @@ new class(10) extends SomeClass implements SomeInterface {
 
     use SomeTrait;
 };
+interface SomeInterface {}
+interface ArrayProxyAccess extends ArrayAccess{}
 <=======>
 <?php
 
@@ -62,3 +64,9 @@ new class (10) extends SomeClass implements SomeInterface {
     }
     use SomeTrait;
 };
+interface SomeInterface
+{
+}
+interface ArrayProxyAccess extends ArrayAccess
+{
+}
