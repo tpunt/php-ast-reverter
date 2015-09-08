@@ -1443,6 +1443,9 @@ class AstReverter
 
         // (public|protected|private)(static)?
         switch ($node->flags) {
+            case \ast\flags\MODIFIER_STATIC:
+                $scope = 'static';
+                break;
             case \ast\flags\MODIFIER_PUBLIC:
                 $scope = 'public';
                 break;

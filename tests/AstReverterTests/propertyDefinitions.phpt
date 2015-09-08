@@ -8,7 +8,8 @@ public $a;
      * DocComment here
      */
  protected static $b = 1;
-private static $c;}
+private static $c;
+static $d;}
 <=======>
 <?php
 
@@ -20,4 +21,5 @@ class Test
      */
     protected static $b = 1;
     private static $c;
+    static $d;
 }
