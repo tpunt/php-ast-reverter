@@ -1253,20 +1253,22 @@ class AstReverter
             $code .= ' : ' . $this->revertAST($node->children[3]);
         }
 
-        $code .= PHP_EOL
-            . $this->indent()
-            . '{'
-            . PHP_EOL;
+        if ($node->children[2] !== null) {
+            $code .= PHP_EOL
+                . $this->indent()
+                . '{'
+                . PHP_EOL;
 
-        ++$this->indentationLevel;
+            ++$this->indentationLevel;
 
-        $code .= $this->revertAST($node->children[2]);
+            $code .= $this->revertAST($node->children[2]);
 
-        --$this->indentationLevel;
+            --$this->indentationLevel;
 
-        $code .= $this->indent()
-            . '}'
-            . PHP_EOL;
+            $code .= $this->indent()
+                . '}'
+                . PHP_EOL;
+        }
 
         return $code;
     }
