@@ -746,7 +746,7 @@ class AstReverter
     {
         $aggregator = [];
 
-        foreach($node->children as $child) {
+        foreach ($node->children as $child) {
             $aggregator[] = $this->revertAST($child);
         }
 
@@ -901,15 +901,19 @@ class AstReverter
             $code .= ' ' . $this->revertAST($node->children[2]);
         }
 
-        $code .= ') {' . PHP_EOL;
+        $code .= ')';
 
-        ++$this->indentationLevel;
+        if ($node->children[3] !== null) {
+            $code .=' {' . PHP_EOL;
 
-        $code .= $this->revertAST($node->children[3]);
+            ++$this->indentationLevel;
 
-        --$this->indentationLevel;
+            $code .= $this->revertAST($node->children[3]);
 
-        $code .= $this->indent() . '}';
+            --$this->indentationLevel;
+
+            $code .= $this->indent() . '}';
+        }
 
         return $code;
     }
@@ -940,15 +944,19 @@ class AstReverter
             $code .= "{$this->revertAST($node->children[2])} => ";
         }
 
-        $code .= "{$this->revertAST($node->children[1])}) {" . PHP_EOL;
+        $code .= "{$this->revertAST($node->children[1])})";
 
-        ++$this->indentationLevel;
+        if ($node->children[3] !== null) {
+            $code .= ' {' . PHP_EOL;
 
-        $code .= $this->revertAST($node->children[3]);
+            ++$this->indentationLevel;
 
-        --$this->indentationLevel;
+            $code .= $this->revertAST($node->children[3]);
 
-        $code .= $this->indent() . '}';
+            --$this->indentationLevel;
+
+            $code .= $this->indent() . '}';
+        }
 
         return $code;
     }
@@ -1878,18 +1886,19 @@ class AstReverter
 
     private function while(Node $node) : string
     {
-        $code = 'while ('
-            . $this->revertAST($node->children[0])
-            . ') {'
-            . PHP_EOL;
+        $code = 'while (' . $this->revertAST($node->children[0]) . ')';
 
-        ++$this->indentationLevel;
+        if ($node->children[1] !== null) {
+            $code .= ' {' . PHP_EOL;
 
-        $code .= $this->revertAST($node->children[1]);
+            ++$this->indentationLevel;
 
-        --$this->indentationLevel;
+            $code .= $this->revertAST($node->children[1]);
 
-        $code .= $this->indent() . '}';
+            --$this->indentationLevel;
+
+            $code .= $this->indent() . '}';
+        }
 
         return $code;
     }

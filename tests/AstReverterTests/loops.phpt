@@ -15,6 +15,9 @@ for ($a = 0, $b = 0; $a > 10, $b >= 1; ++$a, $b--) {
     'a';
 }
 for(;;){}
+for(;;);
+while(0);
+foreach($a as $b);
 <=======>
 <?php
 
@@ -31,3 +34,6 @@ for ($a = 0, $b = 0; $a > 10, $b >= 1; ++$a, $b--) {
 }
 for (;;) {
 }
+for (;;);
+while (0);
+foreach ($a as $b);
