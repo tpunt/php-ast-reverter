@@ -772,7 +772,7 @@ class AstReverter
             $code .= 'const ';
         }
 
-        $code .= $this->revertAST($node->children[0]);
+        $code .= $this->commaSeparatedValues($node);
 
         return $code;
     }

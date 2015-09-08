@@ -30,6 +30,8 @@ goto a;
 clone $a->b();
 global $a, $b;
 declare(strict_types=1);
+declare(a=1,b=2);
+const afunction=3,ause=4;
 if (1) {$a;}
 if (1) {$a;} elseif (2) {$b;}
 if (1) {$a;} elseif (2) {$b;} else {$c;}
@@ -66,6 +68,8 @@ clone $a->b();
 global $a;
 global $b;
 declare(strict_types = 1);
+declare(a = 1, b = 2);
+const afunction = 3, ause = 4;
 if (1) {
     $a;
 }
