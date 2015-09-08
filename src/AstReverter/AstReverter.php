@@ -29,7 +29,6 @@ class AstReverter
                 case 'string':
                     return '"' . $this->sanitiseString($node) . '"';
                 default:
-                throw new \Exception;
                     // an array, null, etc, should never come through here
                     assert(false, 'Unknown type ('. gettype($node) . ') found.');
             }
