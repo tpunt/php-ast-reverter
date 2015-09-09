@@ -741,13 +741,15 @@ class AstReverter
 
     /**
      * Custom method for building comma-deliniated lists.
+     *
+     * The NULL check is required for list(,,, $a)
      */
     private function commaSeparatedValues(Node $node) : string
     {
         $aggregator = [];
 
         foreach ($node->children as $child) {
-            $aggregator[] = $this->revertAST($child);
+            $aggregator[] = ($child === null) ? null : $this->revertAST($child);
         }
 
         return implode(', ', $aggregator);
