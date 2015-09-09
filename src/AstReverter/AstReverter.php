@@ -800,6 +800,22 @@ class AstReverter
         return $code;
     }
 
+    /**
+     * Custom method used to wrap single statement bodies into a AST_STMT_LIST.
+     *
+     * Used when braces are omitted for single statement bodies, like:
+     * while (1)
+     *     doSomething();
+     */
+    private function createStmtList(Node $node) : Node
+    {
+        $node2 = new Node;
+        $node2->kind = \ast\AST_STMT_LIST;
+        $node2->children = [$node];
+
+        return $node2;
+    }
+
     private function declare(Node $node) : string
     {
         $code = 'declare(' . $this->constDecl($node->children[0], false) . ')';
@@ -904,11 +920,15 @@ class AstReverter
         $code .= ')';
 
         if ($node->children[3] !== null) {
+            $bodyNode = ($node->children[3]->kind === \ast\AST_STMT_LIST)
+                ? $node->children[3]
+                : $this->createStmtList($node->children[3]);
+
             $code .=' {' . PHP_EOL;
 
             ++$this->indentationLevel;
 
-            $code .= $this->revertAST($node->children[3]);
+            $code .= $this->revertAST($bodyNode);
 
             --$this->indentationLevel;
 
@@ -947,11 +967,15 @@ class AstReverter
         $code .= "{$this->revertAST($node->children[1])})";
 
         if ($node->children[3] !== null) {
+            $bodyNode = ($node->children[3]->kind === \ast\AST_STMT_LIST)
+                ? $node->children[3]
+                : $this->createStmtList($node->children[3]);
+
             $code .= ' {' . PHP_EOL;
 
             ++$this->indentationLevel;
 
-            $code .= $this->revertAST($node->children[3]);
+            $code .= $this->revertAST($bodyNode);
 
             --$this->indentationLevel;
 
@@ -1055,51 +1079,46 @@ class AstReverter
 
     private function if(Node $node) : string
     {
-        $code = '';
+        $code = $this->ifElem($node->children[0], 'if ');
+
         $childCount = count($node->children);
 
-        for ($i = 0; $i < $childCount; ++$i) {
-            $body = true;
+        for ($i = 1; $i < $childCount; ++$i) {
+            $type = ($node->children[$i]->children[0] !== null) ? ' elseif ' : ' else';
 
-            if ($node->children[$i]->children[0] !== null) {
-                if ($i === 0) {
-                    $code .= 'if ';
-                } else {
-                    $code .= ' elseif ';
-                }
-
-                $code .= $this->revertAST($node->children[$i]);
-            } else {
-                $code .= ' else';
-
-                if ($node->children[$i]->children[1]->kind === \ast\AST_IF) {
-                    $code .= $this->revertAST($node->children[$i]->children[1]);
-                    $body = false;
-                }
-            }
-
-            if ($body) {
-                $code .= ' {' . PHP_EOL;
-
-                ++$this->indentationLevel;
-
-                $code .= $this->revertAST($node->children[$i]->children[1]);
-
-                --$this->indentationLevel;
-
-                $code .= $this->indent() . '}';
-            }
+            $code .= $this->ifElem($node->children[$i], $type);
         }
 
         return $code;
     }
 
-    private function ifElem(Node $node) : string
+    private function ifElem(Node $node, string $type) : string
     {
-        // @TODO AST_IF_ELEM 2 children - not sure what 2nd child is for
-        return '('
-            . $this->revertAST($node->children[0])
-            . ')';
+        $code = $type;
+
+        if ($node->children[0] !== null) {
+            $code .= '(' . $this->revertAST($node->children[0]) . ')';
+        }
+
+        if ($node->children[1] === null) {
+            return $code .= $this->terminateStatement($code);
+        }
+
+        $code .= ' {' . PHP_EOL;
+
+        ++$this->indentationLevel;
+
+        $bodyNode = ($node->children[1]->kind === \ast\AST_STMT_LIST)
+            ? $node->children[1]
+            : $this->createStmtList($node->children[1]);
+
+        $code .= $this->revertAST($bodyNode);
+
+        --$this->indentationLevel;
+
+        $code .= $this->indent() . '}';
+
+        return $code;
     }
 
     private function includeOrEval(Node $node) : string
@@ -1892,11 +1911,15 @@ class AstReverter
         $code = 'while (' . $this->revertAST($node->children[0]) . ')';
 
         if ($node->children[1] !== null) {
+            $bodyNode = ($node->children[1]->kind === \ast\AST_STMT_LIST)
+                ? $node->children[1]
+                : $this->createStmtList($node->children[1]);
+
             $code .= ' {' . PHP_EOL;
 
             ++$this->indentationLevel;
 
-            $code .= $this->revertAST($node->children[1]);
+            $code .= $this->revertAST($bodyNode);
 
             --$this->indentationLevel;
 

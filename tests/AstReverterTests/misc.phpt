@@ -12,15 +12,6 @@ if (1) {
         $c;
     }
 }
-if (1) {
-    $a;
-} else if (2) {
-    $b;
-} elseif (3) {
-    $c;
-} else {
-    $d;
-}
 [1 => 2, 3=>4, 5, 6, a(), b() => c];
 (string) $a;
 (bool) $a;
@@ -65,15 +56,6 @@ if (1) {
     } finally {
         $c;
     }
-}
-if (1) {
-    $a;
-} elseif (2) {
-    $b;
-} elseif (3) {
-    $c;
-} else {
-    $d;
 }
 [1 => 2, 3 => 4, 5, 6, a(), b() => c];
 (string) $a;

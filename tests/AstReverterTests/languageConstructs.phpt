@@ -35,6 +35,24 @@ const afunction=3,ause=4;
 if (1) {$a;}
 if (1) {$a;} elseif (2) {$b;}
 if (1) {$a;} elseif (2) {$b;} else {$c;}
+if (1) {
+    $a;
+} else if (2) {
+    $b;
+} elseif (3) {
+    $c;
+} else {
+    $d;
+}
+if (0) {
+    $a;
+} else {
+    if(1)
+        if (2) {
+
+        }
+}
+if (1);
 <=======>
 <?php
 
@@ -85,3 +103,23 @@ if (1) {
 } else {
     $c;
 }
+if (1) {
+    $a;
+} else {
+    if (2) {
+        $b;
+    } elseif (3) {
+        $c;
+    } else {
+        $d;
+    }
+}
+if (0) {
+    $a;
+} else {
+    if (1) {
+        if (2) {
+        }
+    }
+}
+if (1);
