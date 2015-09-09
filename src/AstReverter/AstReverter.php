@@ -1214,66 +1214,139 @@ class AstReverter
     {
         $code = '';
         $scope = '';
+        $returnsRef = '';
 
         if (isset($node->docComment)) {
             $code .= $node->docComment . PHP_EOL . $this->indent();
         }
 
-        // (abstract|final)?(public|protected|private)(static)?
+        // (abstract|final)?(public|protected|private)(static)?&?
         switch ($node->flags) {
             case \ast\flags\MODIFIER_PUBLIC:
                 $scope = 'public';
                 break;
+            case \ast\flags\MODIFIER_PUBLIC | \ast\flags\RETURNS_REF:
+                $scope = 'public';
+                $returnsRef = '&';
+                break;
             case \ast\flags\MODIFIER_ABSTRACT | \ast\flags\MODIFIER_PUBLIC:
                 $scope = 'abstract public';
+                break;
+            case \ast\flags\MODIFIER_ABSTRACT | \ast\flags\MODIFIER_PUBLIC | \ast\flags\RETURNS_REF:
+                $scope = 'abstract public';
+                $returnsRef = '&';
                 break;
             case \ast\flags\MODIFIER_FINAL | \ast\flags\MODIFIER_PUBLIC:
                 $scope = 'final public';
                 break;
+            case \ast\flags\MODIFIER_FINAL | \ast\flags\MODIFIER_PUBLIC | \ast\flags\RETURNS_REF:
+                $scope = 'final public';
+                $returnsRef = '&';
+                break;
             case \ast\flags\MODIFIER_PUBLIC | \ast\flags\MODIFIER_STATIC:
                 $scope = 'public static';
+                break;
+            case \ast\flags\MODIFIER_PUBLIC | \ast\flags\MODIFIER_STATIC | \ast\flags\RETURNS_REF:
+                $scope = 'public static';
+                $returnsRef = '&';
                 break;
             case \ast\flags\MODIFIER_ABSTRACT | \ast\flags\MODIFIER_PUBLIC | \ast\flags\MODIFIER_STATIC:
                 $scope = 'abstract public static';
                 break;
+            case \ast\flags\MODIFIER_ABSTRACT | \ast\flags\MODIFIER_PUBLIC | \ast\flags\MODIFIER_STATIC | \ast\flags\RETURNS_REF:
+                $scope = 'abstract public static';
+                $returnsRef = '&';
+                break;
             case \ast\flags\MODIFIER_FINAL | \ast\flags\MODIFIER_PUBLIC | \ast\flags\MODIFIER_STATIC:
                 $scope = 'final public static';
+                break;
+            case \ast\flags\MODIFIER_FINAL | \ast\flags\MODIFIER_PUBLIC | \ast\flags\MODIFIER_STATIC | \ast\flags\RETURNS_REF:
+                $scope = 'final public static';
+                $returnsRef = '&';
                 break;
             case \ast\flags\MODIFIER_PROTECTED:
                 $scope = 'protected';
                 break;
+            case \ast\flags\MODIFIER_PROTECTED | \ast\flags\RETURNS_REF:
+                $scope = 'protected';
+                $returnsRef = '&';
+                break;
             case \ast\flags\MODIFIER_ABSTRACT | \ast\flags\MODIFIER_PROTECTED:
                 $scope = 'abstract protected';
+                break;
+            case \ast\flags\MODIFIER_ABSTRACT | \ast\flags\MODIFIER_PROTECTED | \ast\flags\RETURNS_REF:
+                $scope = 'abstract protected';
+                $returnsRef = '&';
                 break;
             case \ast\flags\MODIFIER_FINAL | \ast\flags\MODIFIER_PROTECTED:
                 $scope = 'final protected';
                 break;
+            case \ast\flags\MODIFIER_FINAL | \ast\flags\MODIFIER_PROTECTED | \ast\flags\RETURNS_REF:
+                $scope = 'final protected';
+                $returnsRef = '&';
+                break;
             case \ast\flags\MODIFIER_PROTECTED | \ast\flags\MODIFIER_STATIC:
                 $scope = 'protected static';
+                break;
+            case \ast\flags\MODIFIER_PROTECTED | \ast\flags\MODIFIER_STATIC | \ast\flags\RETURNS_REF:
+                $scope = 'protected static';
+                $returnsRef = '&';
                 break;
             case \ast\flags\MODIFIER_ABSTRACT | \ast\flags\MODIFIER_PROTECTED | \ast\flags\MODIFIER_STATIC:
                 $scope = 'abstract protected static';
                 break;
+            case \ast\flags\MODIFIER_ABSTRACT | \ast\flags\MODIFIER_PROTECTED | \ast\flags\MODIFIER_STATIC | \ast\flags\RETURNS_REF:
+                $scope = 'abstract protected static';
+                $returnsRef = '&';
+                break;
             case \ast\flags\MODIFIER_FINAL | \ast\flags\MODIFIER_PROTECTED | \ast\flags\MODIFIER_STATIC:
                 $scope = 'final protected static';
+                break;
+            case \ast\flags\MODIFIER_FINAL | \ast\flags\MODIFIER_PROTECTED | \ast\flags\MODIFIER_STATIC | \ast\flags\RETURNS_REF:
+                $scope = 'final protected static';
+                $returnsRef = '&';
                 break;
             case \ast\flags\MODIFIER_PRIVATE:
                 $scope = 'private';
                 break;
+            case \ast\flags\MODIFIER_PRIVATE | \ast\flags\RETURNS_REF:
+                $scope = 'private';
+                $returnsRef = '&';
+                break;
             case \ast\flags\MODIFIER_ABSTRACT | \ast\flags\MODIFIER_PRIVATE:
                 $scope = 'abstract private';
+                break;
+            case \ast\flags\MODIFIER_ABSTRACT | \ast\flags\MODIFIER_PRIVATE | \ast\flags\RETURNS_REF:
+                $scope = 'abstract private';
+                $returnsRef = '&';
                 break;
             case \ast\flags\MODIFIER_FINAL | \ast\flags\MODIFIER_PRIVATE:
                 $scope = 'final private';
                 break;
+            case \ast\flags\MODIFIER_FINAL | \ast\flags\MODIFIER_PRIVATE | \ast\flags\RETURNS_REF:
+                $scope = 'final private';
+                $returnsRef = '&';
+                break;
             case \ast\flags\MODIFIER_PRIVATE | \ast\flags\MODIFIER_STATIC:
                 $scope = 'private static';
+                break;
+            case \ast\flags\MODIFIER_PRIVATE | \ast\flags\MODIFIER_STATIC | \ast\flags\RETURNS_REF:
+                $scope = 'private static';
+                $returnsRef = '&';
                 break;
             case \ast\flags\MODIFIER_ABSTRACT | \ast\flags\MODIFIER_PRIVATE | \ast\flags\MODIFIER_STATIC:
                 $scope = 'abstract private static';
                 break;
+            case \ast\flags\MODIFIER_ABSTRACT | \ast\flags\MODIFIER_PRIVATE | \ast\flags\MODIFIER_STATIC | \ast\flags\RETURNS_REF:
+                $scope = 'abstract private static';
+                $returnsRef = '&';
+                break;
             case \ast\flags\MODIFIER_FINAL | \ast\flags\MODIFIER_PRIVATE | \ast\flags\MODIFIER_STATIC:
                 $scope = 'final private static';
+                break;
+            case \ast\flags\MODIFIER_FINAL | \ast\flags\MODIFIER_PRIVATE | \ast\flags\MODIFIER_STATIC | \ast\flags\RETURNS_REF:
+                $scope = 'final private static';
+                $returnsRef = '&';
                 break;
             default:
                 assert(false, "Unknown flag(s) ({$node->flags}) for AST_METHOD found.");
@@ -1281,6 +1354,7 @@ class AstReverter
 
         $code .= $scope
             . ' function '
+            . $returnsRef
             . $node->name
             . $this->revertAST($node->children[0]);
 
