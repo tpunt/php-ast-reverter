@@ -1655,6 +1655,7 @@ class AstReverter
                     $child->kind === \ast\AST_VAR
                     || $child->kind === \ast\AST_PROP
                     || $child->kind === \ast\AST_STATIC_PROP
+                    || $child->kind === \ast\AST_GLOBAL
                 )
             ) {
                 $code .= $this->forceTerminateStatement($code);
@@ -1971,10 +1972,9 @@ class AstReverter
 
             if (preg_match('~^[_a-z][_a-z0-9]*$~i', $varName)) {
                 return $code . $varName;
-            } else {
-                return $code . "{'" . $varName . "'}";
             }
-            
+
+            return $code . "{'" . $varName . "'}";
         }
 
         $code .= '{' . $this->revertAST($node->children[0]) . '}';
