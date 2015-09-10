@@ -1979,6 +1979,11 @@ class AstReverter
 
         $code .= '{' . $this->revertAST($node->children[0]) . '}';
 
+        // special case check for something like `${$a = $b};`
+        if ($node->children[0]->kind === \ast\AST_ASSIGN) {
+            $code .= $this->forceTerminateStatement($code);
+        }
+
         return $code;
     }
 
