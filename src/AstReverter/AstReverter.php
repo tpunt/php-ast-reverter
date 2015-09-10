@@ -171,6 +171,8 @@ class AstReverter
                 return $this->propDecl($node);
             case \ast\AST_PROP_ELEM:
                 return $this->propElem($node);
+            case \ast\AST_REF:
+                return $this->ref($node);
             case \ast\AST_RETURN:
                 return $this->return($node);
             case \ast\AST_SHELL_EXEC:
@@ -1577,6 +1579,11 @@ class AstReverter
         }
 
         return $code;
+    }
+
+    private function ref(Node $node) : string
+    {
+        return '&' . $this->revertAST($node->children[0]);
     }
 
     private function return(Node $node) : string

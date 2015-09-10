@@ -9,8 +9,8 @@ while (true) {
 do {
     true;
 } while (false);
-foreach ($a as $b => $c) {
-}
+foreach ($a as $b => $c){}
+foreach($arr as $key => &$val){}
 for ($a = 0, $b = 0; $a > 10, $b >= 1; ++$a, $b--) {
     'a';
 }
@@ -31,6 +31,8 @@ do {
     true;
 } while (false);
 foreach ($a as $b => $c) {
+}
+foreach ($arr as $key => &$val) {
 }
 for ($a = 0, $b = 0; $a > 10, $b >= 1; ++$a, $b--) {
     "a";
