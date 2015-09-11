@@ -408,8 +408,7 @@ class AstReverter
             . ' '
             . $op
             . ' '
-            . $this->revertAST($node->children[1])
-            . ';';
+            . $this->revertAST($node->children[1]);
     }
 
     private function assignRef(Node $node) : string
@@ -1663,6 +1662,8 @@ class AstReverter
                     || $child->kind === \ast\AST_PROP
                     || $child->kind === \ast\AST_STATIC_PROP
                     || $child->kind === \ast\AST_GLOBAL
+                    || $child->kind === \ast\AST_ASSIGN
+                    || $child->kind === \ast\AST_ASSIGN_OP
                 )
             ) {
                 $code .= $this->forceTerminateStatement($code);
@@ -1729,10 +1730,6 @@ class AstReverter
      */
     private function terminateStatement(string $buffer) : string
     {
-        if ($buffer === '') {
-            return '';
-        }
-
         $lastChar = substr($buffer, -1);
 
         if ($lastChar !== '}') {
