@@ -421,6 +421,8 @@ class AstReverter
     private function binaryOp(Node $node) : string
     {
         $op = '';
+        $lparen = '';
+        $rparen = '';
 
         switch ($node->flags) {
             case \ast\flags\BINARY_BITWISE_OR:
@@ -494,16 +496,20 @@ class AstReverter
                 break;
             case \ast\flags\BINARY_SPACESHIP:
                 $op = '<=>';
+                $lparen = '(';
+                $rparen = ')';
                 break;
             default:
                 assert(false, "Unknown flag ({$node->flags}) for AST_BINARY_OP found.");
         }
 
-        return $this->revertAST($node->children[0])
+        return $lparen
+            . $this->revertAST($node->children[0])
             . ' '
             . $op
             . ' '
-            . $this->revertAST($node->children[1]);
+            . $this->revertAST($node->children[1])
+            . $rparen;
     }
 
     private function break(Node $node) : string
