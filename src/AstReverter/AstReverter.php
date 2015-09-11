@@ -719,7 +719,7 @@ class AstReverter
 
         --$this->indentationLevel;
 
-        $code .= $this->indent() . '};';
+        $code .= $this->indent() . '}';
 
         return $code;
     }
@@ -1670,6 +1670,7 @@ class AstReverter
                     || $child->kind === \ast\AST_GLOBAL
                     || $child->kind === \ast\AST_ASSIGN
                     || $child->kind === \ast\AST_ASSIGN_OP
+                    || $child->kind === \ast\AST_CLOSURE
                 )
             ) {
                 $code .= $this->forceTerminateStatement($code);
