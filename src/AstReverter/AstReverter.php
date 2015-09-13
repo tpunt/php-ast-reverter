@@ -634,7 +634,7 @@ class AstReverter
                 // anonymous class
                 break;
             default:
-                // assert(false, "Unknown flag ({$node->flags}) for AST_CLASS found.");
+                assert(false, "Unknown flag ({$node->flags}) for AST_CLASS found.");
         }
 
         if ($node->children[0] !== null) {
