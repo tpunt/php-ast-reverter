@@ -420,9 +420,9 @@ class AstReverter
 
     private function binaryOp(Node $node) : string
     {
+        $code = '';
         $op = '';
-        $lparen = '';
-        $rparen = '';
+        $enforcePrecendence = true;
 
         switch ($node->flags) {
             case \ast\flags\BINARY_BITWISE_OR:
@@ -435,6 +435,7 @@ class AstReverter
                 $op = '^';
                 break;
             case \ast\flags\BINARY_CONCAT:
+                $enforcePrecendence = false;
                 $op = '.';
                 break;
             case \ast\flags\BINARY_ADD:
@@ -496,20 +497,27 @@ class AstReverter
                 break;
             case \ast\flags\BINARY_SPACESHIP:
                 $op = '<=>';
-                $lparen = '(';
-                $rparen = ')';
                 break;
             default:
                 assert(false, "Unknown flag ({$node->flags}) for AST_BINARY_OP found.");
         }
 
-        return $lparen
-            . $this->revertAST($node->children[0])
-            . ' '
-            . $op
-            . ' '
-            . $this->revertAST($node->children[1])
-            . $rparen;
+        $buffer = [];
+
+        for ($i = 0; $i < 2; ++$i) {
+            if (
+                $enforcePrecendence
+                && $node->children[$i] instanceof Node
+                && $node->children[$i]->kind === \ast\AST_BINARY_OP
+            ) {
+                    $buffer[] = '(' . $this->revertAST($node->children[$i]) . ')';
+                    continue;
+            }
+
+            $buffer[] = $this->revertAST($node->children[$i]);
+        }
+
+        return implode(' ' . $op . ' ', $buffer);
     }
 
     private function break(Node $node) : string
