@@ -574,7 +574,15 @@ class AstReverter
 
     private function catch(Node $node) : string
     {
-        $code = ' catch (' . $this->revertAST($node->children[0]) . ' $' . $node->children[1] . ') {' . PHP_EOL;
+        $code = ' catch (' . $this->revertAST($node->children[0]) . ' ';
+
+        if ($node->children[1] instanceof Node) {
+            $code .= $this->revertAST($node->children[1]);
+        } else {
+            $code .= '$' . $node->children[1]; // php-ast version 10 compatibility
+        }
+
+        $code .= ') {' . PHP_EOL;
 
         ++$this->indentationLevel;
 
@@ -1635,7 +1643,13 @@ class AstReverter
 
     private function static(Node $node) : string
     {
-        $code = 'static $' . $node->children[0];
+        $code = 'static ';
+
+        if ($node->children[0] instanceof Node) {
+            $code .= $this->revertAST($node->children[0]);
+        } else {
+            $code .= '$' . $node->children[0]; // php-ast version 10 compatibility
+        }
 
         if ($node->children[1] !== null) {
             $code .= ' = ' . $this->revertAST($node->children[1]);
