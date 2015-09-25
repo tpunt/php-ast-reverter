@@ -638,7 +638,7 @@ class AstReverter
             case 0:
                 // no flag used
                 break;
-            case 256: // no flag constant for anonymous classes yet
+            case \ast\flags\CLASS_ANONYMOUS:
                 // anonymous class
                 break;
             default:
