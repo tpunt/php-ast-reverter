@@ -292,6 +292,9 @@ class AstReverter
         return $code;
     }
 
+    /**
+     * For version 10 compatibility with php-ast extension
+     */
     private function and(Node $node) : string
     {
         return $this->revertAST($node->children[0])
@@ -983,13 +986,13 @@ class AstReverter
 
     private function foreach(Node $node) : string
     {
-        $code = "foreach ({$this->revertAST($node->children[0])} as ";
+        $code = 'foreach (' . $this->revertAST($node->children[0]) . ' as ';
 
         if (isset($node->children[2])) {
-            $code .= "{$this->revertAST($node->children[2])} => ";
+            $code .= $this->revertAST($node->children[2]) . ' => ';
         }
 
-        $code .= "{$this->revertAST($node->children[1])})";
+        $code .= $this->revertAST($node->children[1]) . ')';
 
         if ($node->children[3] !== null) {
             $bodyNode = ($node->children[3]->kind === \ast\AST_STMT_LIST)
@@ -1092,7 +1095,7 @@ class AstReverter
 
         $code .= $this->use($node->children[1], false); // a hack to not show 'use ' in block
 
-        $code .= '};';
+        $code .= '}';
 
         return $code;
     }
@@ -1209,8 +1212,6 @@ class AstReverter
 
     private function magicConst(Node $node)
     {
-        // $node = null when in namespace with braces ?
-
         switch ($node->flags) {
             case T_LINE:
                 return '__LINE__';
@@ -1424,7 +1425,15 @@ class AstReverter
         switch ($node->flags) {
             case \ast\flags\NAME_FQ:
                 $code .= '\\';
-            // ignore NAME_NOT_FQ
+                break;
+            case \ast\flags\NAME_NOT_FQ:
+                // nothing to do
+                break;
+            case \ast\flags\NAME_RELATIVE:
+                // nothing to do
+                break;
+            default:
+                assert(false, "Unknown flag ({$node->flags}) for AST_PARAM found.");
         }
 
         $code .= $node->children[0];
@@ -1454,7 +1463,7 @@ class AstReverter
 
             --$this->indentationLevel;
 
-            $code .= $this->indent() . '};' . PHP_EOL;
+            $code .= $this->indent() . '}' . PHP_EOL;
         }
 
         return $code;
@@ -1488,21 +1497,23 @@ class AstReverter
     private function param(Node $node) : string
     {
         $code = '';
-        $modifier = '';
-
-        switch ($node->flags) {
-            case \ast\flags\PARAM_VARIADIC:
-                $modifier = '...';
-                break;
-            case \ast\flags\PARAM_REF:
-                $modifier = '&';
-        }
 
         if ($node->children[0] !== null) {
             $code .= $this->revertAST($node->children[0]) . ' ';
         }
 
-        $code .= $modifier . '$' . $node->children[1];
+        switch ($node->flags) {
+            case \ast\flags\PARAM_VARIADIC:
+                $code .= '...';
+                break;
+            case \ast\flags\PARAM_REF:
+                $code .= '&';
+                break;
+            default:
+                assert(false, "Unknown flag ({$node->flags}) for AST_PARAM found.");
+        }
+
+        $code .= '$' . $node->children[1];
 
         if ($node->children[2] !== null) {
             $code .= ' = ' . $this->revertAST($node->children[2]);
@@ -1540,9 +1551,7 @@ class AstReverter
 
     private function print(Node $node) : string
     {
-        $code = 'print ' . $this->revertAST($node->children[0]);
-
-        return $code;
+        return 'print ' . $this->revertAST($node->children[0]);
     }
 
     private function prop(Node $node) : string
@@ -1693,6 +1702,7 @@ class AstReverter
                     || $child->kind === \ast\AST_ASSIGN
                     || $child->kind === \ast\AST_ASSIGN_OP
                     || $child->kind === \ast\AST_CLOSURE
+                    || $child->kind === \ast\AST_GROUP_USE
                 )
             ) {
                 $code .= $this->forceTerminateStatement($code);
