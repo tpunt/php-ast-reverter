@@ -1509,6 +1509,9 @@ class AstReverter
             case \ast\flags\PARAM_REF:
                 $code .= '&';
                 break;
+            case 0:
+                // no flag
+                break;
             default:
                 assert(false, "Unknown flag ({$node->flags}) for AST_PARAM found.");
         }
@@ -1564,10 +1567,6 @@ class AstReverter
         $code = '';
         $scope = '';
 
-        if (isset($node->docComment)) {
-            $code .= $node->docComment . PHP_EOL . $this->indent();
-        }
-
         // (public|protected|private)(static)?
         switch ($node->flags) {
             case \ast\flags\MODIFIER_STATIC:
@@ -1595,14 +1594,20 @@ class AstReverter
                 assert(false, "Unknown flag(s) ({$node->flags}) for AST_PROP_DECL found.");
         }
 
-        $code .= $scope . ' ' . $this->revertAST($node->children[0]);
+        $code .= $scope . ' ' . $this->commaSeparatedValues($node);
 
         return $code;
     }
 
     private function propElem(Node $node) : string
     {
-        $code = '$' . $node->children[0];
+        $code = '';
+
+        if (isset($node->docComment)) {
+            $code .= PHP_EOL . $this->indent() . $node->docComment . PHP_EOL . $this->indent();
+        }
+
+        $code .= '$' . $node->children[0];
 
         if ($node->children[1] !== null) {
             $code .= ' = ' . $this->revertAST($node->children[1]);

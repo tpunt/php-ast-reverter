@@ -35,6 +35,11 @@ class AstReverterTest extends \PHPUnit_Framework_TestCase
             $name = trim($test[0]);
             $input = trim($test[1]);
             $expected = ltrim($test[2]) . PHP_EOL;
+            $phpAstVersions = isset($test[3]) ? explode(',', trim($test[3])) : [10, 20];
+
+            if (!in_array($version, $phpAstVersions)) {
+                return;
+            }
 
             $this->assertEquals($expected, $this->astReverter->getCode(parse_code($input, $version)), $name);
         }

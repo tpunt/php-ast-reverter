@@ -3,11 +3,20 @@ Property Definitions Test
 <?php
 
 class Test{
-public $a;
     /**
      * DocComment here
      */
- protected static $b = 1;
+public $a;
+
+ protected
+    /**
+     * b
+     */
+    $b = 1,
+    /**
+     * c
+     */
+    $c = 2;
 private static $c;
 static $d;}
 <=======>
@@ -15,11 +24,22 @@ static $d;}
 
 class Test
 {
-    public $a;
+    public
     /**
      * DocComment here
      */
-    protected static $b = 1;
+    $a;
+    protected
+    /**
+     * b
+     */
+    $b = 1,
+    /**
+     * c
+     */
+    $c = 2;
     private static $c;
     static $d;
 }
+<=======>
+20

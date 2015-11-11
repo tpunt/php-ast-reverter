@@ -21,7 +21,7 @@ namespace test2 {
 $c;
 a\b();
 \a\b\c();
-};
+}
 <=======>
 <?php
 
@@ -38,9 +38,9 @@ use app\{ClassName, const CONST_NAME, function funcName};
 namespace test {
     $a;
     $b;
-};
+}
 namespace test2 {
     $c;
     a\b();
     \a\b\c();
-};
+}
