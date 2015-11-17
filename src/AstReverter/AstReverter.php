@@ -513,8 +513,8 @@ class AstReverter
                 && $node->children[$i] instanceof Node
                 && $node->children[$i]->kind === \ast\AST_BINARY_OP
             ) {
-                    $buffer[] = '(' . $this->revertAST($node->children[$i]) . ')';
-                    continue;
+                $buffer[] = '(' . $this->revertAST($node->children[$i]) . ')';
+                continue;
             }
 
             $buffer[] = $this->revertAST($node->children[$i]);
@@ -723,7 +723,9 @@ class AstReverter
         $code .= $this->revertAST($node->children[0]);
 
         if ($node->children[1] !== null) {
-            $code .= ' use (' . $this->commaSeparatedValues($node->children[1]) . ')';
+            $code .= ' use ('
+                . $this->commaSeparatedValues($node->children[1])
+                . ')';
         }
 
         if ($node->children[3] !== null) {
@@ -768,9 +770,12 @@ class AstReverter
     /**
      * Custom method for building comma-deliniated lists.
      *
-     * The NULL check is required for list(,,, $a)
+     * Sometimes, a space is not wanted after a comma because it causes
+     * trailing white space in code, like after multiple property declarations.
+     *
+     * The NULL check is required for list(,,, $a).
      */
-    private function commaSeparatedValues(Node $node) : string
+    private function commaSeparatedValues(Node $node, bool $space = true) : string
     {
         $aggregator = [];
 
@@ -778,7 +783,7 @@ class AstReverter
             $aggregator[] = ($child === null) ? null : $this->revertAST($child);
         }
 
-        return implode(', ', $aggregator);
+        return implode(',' . ($space ? ' ' : ''), $aggregator);
     }
 
     private function conditional(Node $node) : string
@@ -835,7 +840,7 @@ class AstReverter
      * while (1)
      *     doSomething();
      */
-    private function createStmtList(Node $node) : Node
+    private function createStmtList($node) : Node
     {
         $node2 = new Node;
         $node2->kind = \ast\AST_STMT_LIST;
@@ -947,10 +952,15 @@ class AstReverter
 
         $code .= ')';
 
-        if ($node->children[3] !== null) {
-            $bodyNode = ($node->children[3]->kind === \ast\AST_STMT_LIST)
-                ? $node->children[3]
-                : $this->createStmtList($node->children[3]);
+        $bodyNode = $node->children[3];
+
+        if ($bodyNode !== null) {
+            if (
+                !$bodyNode instanceof Node
+                || $bodyNode->kind !== \ast\AST_STMT_LIST
+            ) {
+                $bodyNode = $this->createStmtList($bodyNode);
+            }
 
             $code .=' {' . PHP_EOL;
 
@@ -994,10 +1004,15 @@ class AstReverter
 
         $code .= $this->revertAST($node->children[1]) . ')';
 
-        if ($node->children[3] !== null) {
-            $bodyNode = ($node->children[3]->kind === \ast\AST_STMT_LIST)
-                ? $node->children[3]
-                : $this->createStmtList($node->children[3]);
+        $bodyNode = $node->children[3];
+
+        if ($bodyNode !== null) {
+            if (
+                !$bodyNode instanceof Node
+                || $bodyNode->kind !== \ast\AST_STMT_LIST
+            ) {
+                $bodyNode = $this->createStmtList($bodyNode);
+            }
 
             $code .= ' {' . PHP_EOL;
 
@@ -1112,7 +1127,9 @@ class AstReverter
         $childCount = count($node->children);
 
         for ($i = 1; $i < $childCount; ++$i) {
-            $type = ($node->children[$i]->children[0] !== null) ? ' elseif ' : ' else';
+            $type = ($node->children[$i]->children[0] !== null)
+                ? ' elseif '
+                : ' else';
 
             $code .= $this->ifElem($node->children[$i], $type);
         }
@@ -1136,9 +1153,14 @@ class AstReverter
 
         ++$this->indentationLevel;
 
-        $bodyNode = ($node->children[1]->kind === \ast\AST_STMT_LIST)
-            ? $node->children[1]
-            : $this->createStmtList($node->children[1]);
+        $bodyNode = $node->children[1];
+
+        if (
+            !$bodyNode instanceof Node
+            || $bodyNode->kind !== \ast\AST_STMT_LIST
+        ) {
+            $bodyNode = $this->createStmtList($bodyNode);
+        }
 
         $code .= $this->revertAST($bodyNode);
 
@@ -1594,7 +1616,7 @@ class AstReverter
                 assert(false, "Unknown flag(s) ({$node->flags}) for AST_PROP_DECL found.");
         }
 
-        $code .= $scope . ' ' . $this->commaSeparatedValues($node);
+        $code .= $scope . $this->commaSeparatedValues($node, false);
 
         return $code;
     }
@@ -1605,6 +1627,8 @@ class AstReverter
 
         if (isset($node->docComment)) {
             $code .= PHP_EOL . $this->indent() . $node->docComment . PHP_EOL . $this->indent();
+        } else {
+            $code .= ' ';
         }
 
         $code .= '$' . $node->children[0];
@@ -2039,10 +2063,15 @@ class AstReverter
     {
         $code = 'while (' . $this->revertAST($node->children[0]) . ')';
 
-        if ($node->children[1] !== null) {
-            $bodyNode = ($node->children[1]->kind === \ast\AST_STMT_LIST)
-                ? $node->children[1]
-                : $this->createStmtList($node->children[1]);
+        $bodyNode = $node->children[1];
+
+        if ($bodyNode !== null) {
+            if (
+                !$bodyNode instanceof Node
+                || $bodyNode->kind !== \ast\AST_STMT_LIST
+            ) {
+                $bodyNode = $this->createStmtList($bodyNode);
+            }
 
             $code .= ' {' . PHP_EOL;
 

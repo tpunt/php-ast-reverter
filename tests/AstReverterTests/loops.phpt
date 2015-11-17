@@ -18,9 +18,9 @@ for(;;){}
 for(;;);
 for (;;) $a;
 while(0);
-while (1) $a;
+while (1) 1;
 foreach($a as $b);
-foreach ($a as $b) $b;
+foreach ($a as $b) true;
 <=======>
 <?php
 
@@ -45,9 +45,9 @@ for (;;) {
 }
 while (0);
 while (1) {
-    $a;
+    1;
 }
 foreach ($a as $b);
 foreach ($a as $b) {
-    $b;
+    true;
 }
