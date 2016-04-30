@@ -35,8 +35,6 @@ class AstReverter
         }
 
         switch ($node->kind) {
-            case \ast\AST_AND:
-                return $this->and($node);
             case \ast\AST_ARG_LIST:
                 return $this->argList($node);
             case \ast\AST_ARRAY:
@@ -111,10 +109,6 @@ class AstReverter
                 return $this->global($node);
             case \ast\AST_GOTO:
                 return $this->goto($node);
-            case \ast\AST_GREATER:
-                return $this->greater($node);
-            case \ast\AST_GREATER_EQUAL:
-                return $this->greaterEqual($node);
             case \ast\AST_GROUP_USE:
                 return $this->groupUse($node);
             case \ast\AST_HALT_COMPILER:
@@ -149,8 +143,6 @@ class AstReverter
                 return $this->nameList($node);
             case \ast\AST_NEW:
                 return $this->new($node);
-            case \ast\AST_OR:
-                return $this->or($node);
             case \ast\AST_PARAM:
                 return $this->param($node);
             case \ast\AST_PARAM_LIST:
@@ -177,8 +169,6 @@ class AstReverter
                 return $this->return($node);
             case \ast\AST_SHELL_EXEC:
                 return $this->shellExec($node);
-            case \ast\AST_SILENCE:
-                return $this->silence($node);
             case \ast\AST_STATIC:
                 return $this->static($node);
             case \ast\AST_STATIC_CALL:
@@ -205,12 +195,8 @@ class AstReverter
                 return $this->try($node);
             case \ast\AST_TYPE:
                 return $this->type($node);
-            case \ast\AST_UNARY_MINUS:
-                return $this->unaryMinus($node);
             case \ast\AST_UNARY_OP:
                 return $this->unaryOp($node);
-            case \ast\AST_UNARY_PLUS:
-                return $this->unaryPlus($node);
             case \ast\AST_UNPACK:
                 return $this->unpack($node);
             case \ast\AST_UNSET:
@@ -292,16 +278,6 @@ class AstReverter
         return $code;
     }
 
-    /**
-     * For version 10 compatibility with php-ast extension
-     */
-    private function and(Node $node) : string
-    {
-        return $this->revertAST($node->children[0])
-            . ' && '
-            . $this->revertAST($node->children[1]);
-    }
-
     private function argList(Node $node) : string
     {
         return '('
@@ -353,53 +329,39 @@ class AstReverter
         $op = '';
 
         switch ($node->flags) {
-            // ASSIGN_* for version 10 compatibility
-            // BINARY_* for version 20 compatibility
-            case \ast\flags\ASSIGN_BITWISE_OR:
             case \ast\flags\BINARY_BITWISE_OR:
                 $op = '|=';
                 break;
-            case \ast\flags\ASSIGN_BITWISE_AND:
             case \ast\flags\BINARY_BITWISE_AND:
                 $op = '&=';
                 break;
-            case \ast\flags\ASSIGN_BITWISE_XOR:
             case \ast\flags\BINARY_BITWISE_XOR:
                 $op = '^=';
                 break;
-            case \ast\flags\ASSIGN_CONCAT:
             case \ast\flags\BINARY_CONCAT: 
                 $op = '.=';
                 break;
-            case \ast\flags\ASSIGN_ADD:
             case \ast\flags\BINARY_ADD:
                 $op = '+=';
                 break;
-            case \ast\flags\ASSIGN_SUB:
             case \ast\flags\BINARY_SUB:
                 $op = '-=';
                 break;
-            case \ast\flags\ASSIGN_MUL:
             case \ast\flags\BINARY_MUL:
                 $op = '*=';
                 break;
-            case \ast\flags\ASSIGN_DIV:
             case \ast\flags\BINARY_DIV:
                 $op = '/=';
                 break;
-            case \ast\flags\ASSIGN_MOD:
             case \ast\flags\BINARY_MOD:
                 $op = '%=';
                 break;
-            case \ast\flags\ASSIGN_POW:
             case \ast\flags\BINARY_POW:
                 $op = '**=';
                 break;
-            case \ast\flags\ASSIGN_SHIFT_LEFT:
             case \ast\flags\BINARY_SHIFT_LEFT:
                 $op = '<<=';
                 break;
-            case \ast\flags\ASSIGN_SHIFT_RIGHT:
             case \ast\flags\BINARY_SHIFT_RIGHT:
                 $op = '>>=';
                 break;
@@ -578,13 +540,7 @@ class AstReverter
     private function catch(Node $node) : string
     {
         $code = ' catch (' . $this->revertAST($node->children[0]) . ' ';
-
-        if ($node->children[1] instanceof Node) {
-            $code .= $this->revertAST($node->children[1]);
-        } else {
-            $code .= '$' . $node->children[1]; // php-ast version 10 compatibility
-        }
-
+        $code .= $this->revertAST($node->children[1]);
         $code .= ') {' . PHP_EOL;
 
         ++$this->indentationLevel;
@@ -1082,26 +1038,6 @@ class AstReverter
     private function goto(Node $node) : string
     {
         return 'goto ' . $node->children[0];
-    }
-
-    /**
-     * For version 10 compatibility with php-ast extension
-     */
-    private function greater(Node $node) : string
-    {
-        return $this->revertAST($node->children[0])
-            . ' > '
-            . $this->revertAST($node->children[1]);
-    }
-
-    /**
-     * For version 10 compatibility with php-ast extension
-     */
-    private function greaterEqual(Node $node) : string
-    {
-        return $this->revertAST($node->children[0])
-            . ' >= '
-            . $this->revertAST($node->children[1]);
     }
 
     private function groupUse(Node $node) : string
@@ -1665,12 +1601,6 @@ class AstReverter
         return $code;
     }
 
-    // for version 10 compatibility
-    private function silence(Node $node) : string
-    {
-        return '@' . $this->revertAST($node->children[0]);
-    }
-
     private function sanitiseString(string $string) : string
     {
         return strtr(
@@ -1682,12 +1612,7 @@ class AstReverter
     private function static(Node $node) : string
     {
         $code = 'static ';
-
-        if ($node->children[0] instanceof Node) {
-            $code .= $this->revertAST($node->children[0]);
-        } else {
-            $code .= '$' . $node->children[0]; // php-ast version 10 compatibility
-        }
+        $code .= $this->revertAST($node->children[0]);
 
         if ($node->children[1] !== null) {
             $code .= ' = ' . $this->revertAST($node->children[1]);
@@ -1898,12 +1823,6 @@ class AstReverter
         }
     }
 
-    // for version 10 compatibility
-    private function unaryMinus(Node $node) : string
-    {
-        return '-' . $this->revertAST($node->children[0]);
-    }
-
     private function unaryOp(Node $node) : string
     {
         $code = '';
@@ -1931,12 +1850,6 @@ class AstReverter
         $code .= $this->revertAST($node->children[0]);
 
         return $code;
-    }
-
-    // for version 10 compatibility
-    private function unaryPlus(Node $node) : string
-    {
-        return $this->revertAST($node->children[0]); // removes the unary plus
     }
 
     private function unpack(Node $node) : string
