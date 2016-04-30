@@ -1465,18 +1465,11 @@ class AstReverter
             $code .= $this->revertAST($node->children['type']) . ' ';
         }
 
-        switch ($node->flags) {
-            case \ast\flags\PARAM_VARIADIC:
-                $code .= '...';
-                break;
-            case \ast\flags\PARAM_REF:
-                $code .= '&';
-                break;
-            case 0:
-                // no flag
-                break;
-            default:
-                assert(false, "Unknown flag ({$node->flags}) for AST_PARAM found.");
+        if ($node->flags & \ast\flags\PARAM_REF) {
+            $code .= '&';
+        }
+        if ($node->flags & \ast\flags\PARAM_VARIADIC) {
+            $code .= '...';
         }
 
         $code .= '$' . $node->children['name'];
