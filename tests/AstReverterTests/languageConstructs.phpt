@@ -33,6 +33,7 @@ global $a, $b;
 global $$c;
 declare(strict_types=1);
 declare(a=1,b=2);
+declare(ticks=1) {$a;}
 const afunction=3,ause=4;
 if (1) {$a;}
 if (1) {$a;} elseif (2) {$b;}
@@ -92,6 +93,9 @@ global $b;
 global ${$c};
 declare(strict_types = 1);
 declare(a = 1, b = 2);
+declare(ticks = 1) {
+    $a;
+}
 const afunction = 3, ause = 4;
 if (1) {
     $a;

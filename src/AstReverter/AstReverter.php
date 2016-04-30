@@ -809,6 +809,14 @@ class AstReverter
     {
         $code = 'declare(' . $this->constDecl($node->children['declares'], false) . ')';
 
+        if ($node->children['stmts'] !== null) {
+            $code .= ' {' . PHP_EOL;
+            ++$this->indentationLevel;
+            $code .= $this->revertAST($node->children['stmts']);
+            --$this->indentationLevel;
+            $code .= $this->indent() . '}';
+        }
+
         return $code;
     }
 
