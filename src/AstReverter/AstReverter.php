@@ -2003,7 +2003,15 @@ class AstReverter
 
     private function yield(Node $node) : string
     {
-        return 'yield ' . $this->revertAST($node->children['value']);
+        $code = 'yield';
+        if ($node->children['value'] !== null) {
+            $code .= ' ';
+            if ($node->children['key'] !== null) {
+                $code .= $this->revertAST($node->children['key']) . ' => ';
+            }
+            $code .= $this->revertAST($node->children['value']);
+        }
+        return $code;
     }
 
     private function yieldFrom(Node $node) : string
