@@ -558,8 +558,8 @@ class AstReverter
     {
         $code = '';
 
-        if (isset($node->children[0])) {
-            $code .= $this->revertAST($node->children[0]);
+        foreach ($node->children as $catch) {
+            $code .= $this->revertAST($catch);
         }
 
         return $code;
