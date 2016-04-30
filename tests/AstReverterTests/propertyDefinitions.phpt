@@ -41,5 +41,3 @@ class Test
     private static $c;
     static $d;
 }
-<=======>
-20
