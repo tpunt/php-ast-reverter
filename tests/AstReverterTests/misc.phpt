@@ -4,13 +4,7 @@ Misc Test
 
 a:
 if (1) {
-    try {
-     $a;
-    } catch (Exception $e) {
-        $b;
-    } finally {
-        $c;
-    }
+    $a;
 }
 [1 => 2, 3=>4, 5, 6, a(), b() => c];
 (string) $a;
@@ -57,13 +51,7 @@ $a === (1 === 2);
 
 a:
 if (1) {
-    try {
-        $a;
-    } catch (Exception $e) {
-        $b;
-    } finally {
-        $c;
-    }
+    $a;
 }
 [1 => 2, 3 => 4, 5, 6, a(), b() => c];
 (string) $a;

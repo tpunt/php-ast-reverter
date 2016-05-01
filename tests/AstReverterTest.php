@@ -5,14 +5,9 @@ use function ast\parse_code;
 
 class AstReverterTest extends \PHPUnit_Framework_TestCase
 {
-    public function testAstReverterV10()
+    public function testAstReverterV30()
     {
-        $this->abstractTestAstReverter(10);
-    }
-
-    public function testAstReverterV20()
-    {
-        $this->abstractTestAstReverter(20);
+        $this->abstractTestAstReverter(30);
     }
 
     private function abstractTestAstReverter($version)
@@ -35,10 +30,10 @@ class AstReverterTest extends \PHPUnit_Framework_TestCase
             $name = trim($test[0]);
             $input = trim($test[1]);
             $expected = ltrim($test[2]) . PHP_EOL;
-            $phpAstVersions = isset($test[3]) ? explode(',', trim($test[3])) : [10, 20];
+            $phpAstVersions = isset($test[3]) ? explode(',', trim($test[3])) : [30];
 
             if (!in_array($version, $phpAstVersions)) {
-                return;
+                continue;
             }
 
             $this->assertEquals($expected, $this->astReverter->getCode(parse_code($input, $version)), $name);
