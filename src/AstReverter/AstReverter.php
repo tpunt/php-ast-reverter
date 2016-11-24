@@ -288,7 +288,7 @@ class AstReverter
     private function array(Node $node) : string
     {
         $code = '[';
-        
+
         if (isset($node->children[0])) {
             $code .= $this->commaSeparatedValues($node);
         }
@@ -338,7 +338,7 @@ class AstReverter
             case \ast\flags\BINARY_BITWISE_XOR:
                 $op = '^=';
                 break;
-            case \ast\flags\BINARY_CONCAT: 
+            case \ast\flags\BINARY_CONCAT:
                 $op = '.=';
                 break;
             case \ast\flags\BINARY_ADD:
@@ -631,7 +631,7 @@ class AstReverter
         } else {
             $code .= ' ';
         }
-        
+
         $code .= '{' . PHP_EOL;
 
         ++$this->indentationLevel;
@@ -823,7 +823,7 @@ class AstReverter
     private function dim(Node $node) : string
     {
         $code = $this->revertAST($node->children['expr']) . '[';
-        
+
         if ($node->children['dim'] !== null) {
             $code .= $this->revertAST($node->children['dim']);
         }
@@ -1179,21 +1179,21 @@ class AstReverter
     private function magicConst(Node $node)
     {
         switch ($node->flags) {
-            case T_LINE:
+            case \ast\flags\MAGIC_LINE:
                 return '__LINE__';
-            case T_FILE:
+            case \ast\flags\MAGIC_FILE:
                 return '__FILE__';
-            case T_DIR:
+            case \ast\flags\MAGIC_DIR:
                 return '__DIR__';
-            case T_TRAIT_C:
+            case \ast\flags\MAGIC_TRAIT:
                 return '__TRAIT__';
-            case T_METHOD_C:
+            case \ast\flags\MAGIC_METHOD:
                 return '__METHOD__';
-            case T_FUNC_C:
+            case \ast\flags\MAGIC_FUNCTION:
                 return '__FUNCTION__';
-            case T_NS_C:
+            case \ast\flags\MAGIC_NAMESPACE:
                 return '__NAMESPACE__';
-            case T_CLASS_C:
+            case \ast\flags\MAGIC_CLASS:
                 return '__CLASS__';
             default:
                 assert(false, "Unknown flag ({$node->flags}) for T_MAGIC_CONST found.");
