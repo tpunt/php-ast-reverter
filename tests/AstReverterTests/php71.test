@@ -4,10 +4,24 @@ Nullable types
 <=======>
 <?php
 
-function foo(?iterable $x, ?callable $y, int $z, iterable $i) : ?callable {}
+function foo(?iterable $x, ?callable $y, int $z, iterable $i) : void {}
+class Something
+{
+    const PUBLIC_CONST_A = 1;
+    public const PUBLIC_CONST_B = 2;
+    protected const PROTECTED_CONST = 3;
+    private const PRIVATE_CONST = 4;
+}
 <=======>
 <?php
 
-function foo(?iterable $x, ?callable $y, int $z, iterable $i) : ?callable
+function foo(?iterable $x, ?callable $y, int $z, iterable $i) : void
 {
+}
+class Something
+{
+    public const PUBLIC_CONST_A = 1;
+    public const PUBLIC_CONST_B = 2;
+    protected const PROTECTED_CONST = 3;
+    private const PRIVATE_CONST = 4;
 }

@@ -9,6 +9,7 @@ ini_set('assert.exception', 1);
 class AstReverter
 {
     private $indentationLevel = 0;
+    private $inCatchBlock = false;
 
     const INDENTATION_CHAR = ' ';
     const INDENTATION_SIZE = 4;
@@ -283,7 +284,7 @@ class AstReverter
     private function argList(Node $node) : string
     {
         return '('
-            . $this->commaSeparatedValues($node)
+            . $this->commaSeparatedValues($node, ', ')
             . ')';
     }
 
@@ -312,7 +313,7 @@ class AstReverter
         }
 
         if ($node->children !== []) {
-            $code .= $this->commaSeparatedValues($node);
+            $code .= $this->commaSeparatedValues($node, ', ');
         }
 
         $code .= $closing;
@@ -580,9 +581,13 @@ class AstReverter
     {
         $code = '';
 
+        $this->inCatchBlock = true;
+
         foreach ($node->children as $catch) {
             $code .= $this->revertAST($catch);
         }
+
+        $this->inCatchBlock = false;
 
         return $code;
     }
@@ -702,7 +707,7 @@ class AstReverter
 
         if ($node->children['uses'] !== null) {
             $code .= ' use ('
-                . $this->commaSeparatedValues($node->children['uses'])
+                . $this->commaSeparatedValues($node->children['uses'], ', ')
                 . ')';
         }
 
@@ -753,7 +758,7 @@ class AstReverter
      *
      * The NULL check is required for list(,,, $a).
      */
-    private function commaSeparatedValues(Node $node, bool $space = true) : string
+    private function commaSeparatedValues(Node $node, string $separator) : string
     {
         $aggregator = [];
 
@@ -761,7 +766,7 @@ class AstReverter
             $aggregator[] = ($child === null) ? null : $this->revertAST($child);
         }
 
-        return implode(',' . ($space ? ' ' : ''), $aggregator);
+        return implode($separator, $aggregator);
     }
 
     private function conditional(Node $node) : string
@@ -784,11 +789,28 @@ class AstReverter
     {
         $code = '';
 
+        switch ($node->flags) {
+            case \ast\flags\MODIFIER_PUBLIC:
+                $code = 'public ';
+                break;
+            case \ast\flags\MODIFIER_PROTECTED:
+                $code = 'protected ';
+                break;
+            case \ast\flags\MODIFIER_PRIVATE:
+                $code = 'private ';
+                break;
+            case 0:
+                // nothing to do - for PHP 7.0
+                break;
+            default:
+                assert(false, "Unknown flag ({$node->flags}) for AST_CONST_DECL found.");
+        }
+
         if ($setConst) {
             $code .= 'const ';
         }
 
-        $code .= $this->commaSeparatedValues($node);
+        $code .= $this->commaSeparatedValues($node, ', ');
 
         return $code;
     }
@@ -913,7 +935,7 @@ class AstReverter
 
     private function exprList(Node $node) : string
     {
-        return $this->commaSeparatedValues($node);
+        return $this->commaSeparatedValues($node, ', ');
     }
 
     private function for(Node $node) : string
@@ -1189,7 +1211,7 @@ class AstReverter
 
     private function list(Node $node) : string
     {
-        return 'list(' . $this->commaSeparatedValues($node) . ')';
+        return 'list(' . $this->commaSeparatedValues($node, ', ') . ')';
     }
 
     private function magicConst(Node $node)
@@ -1431,7 +1453,7 @@ class AstReverter
 
     private function nameList(Node $node) : string
     {
-        return $this->commaSeparatedValues($node);
+        return $this->commaSeparatedValues($node, $this->inCatchBlock ? ' | ' : ', ');
     }
 
     private function namespace(Node $node) : string
@@ -1507,7 +1529,7 @@ class AstReverter
     private function paramList(Node $node) : string
     {
         return '('
-            . $this->commaSeparatedValues($node)
+            . $this->commaSeparatedValues($node, ', ')
             . ')';
     }
 
@@ -1573,7 +1595,7 @@ class AstReverter
                 assert(false, "Unknown flag(s) ({$node->flags}) for AST_PROP_DECL found.");
         }
 
-        $code .= $scope . $this->commaSeparatedValues($node, false);
+        $code .= $scope . $this->commaSeparatedValues($node, ',');
 
         return $code;
     }
@@ -1853,6 +1875,8 @@ class AstReverter
                 return 'iterable';
             case \ast\flags\TYPE_DOUBLE:
                 return 'float';
+            case \ast\flags\TYPE_VOID:
+                return 'void';
             default:
                 assert(false, "Unknown flag ({$node->flags}) for AST_TYPE found.");
         }
@@ -1900,7 +1924,7 @@ class AstReverter
     private function use(Node $node, $setUse = true) : string
     {
         return $this->useAbstract($node, $setUse)
-            . $this->commaSeparatedValues($node);
+            . $this->commaSeparatedValues($node, ', ');
     }
 
     /**
@@ -1968,7 +1992,7 @@ class AstReverter
     {
         $code = 'use ';
 
-        $code .= $this->commaSeparatedValues($node->children['traits']);
+        $code .= $this->commaSeparatedValues($node->children['traits'], ', ');
 
         if ($node->children['adaptations'] !== null) {
             $code .= ' {' . PHP_EOL;
