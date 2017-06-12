@@ -143,6 +143,8 @@ class AstReverter
                 return $this->nameList($node);
             case \ast\AST_NEW:
                 return $this->new($node);
+            case \ast\AST_NULLABLE_TYPE:
+                return $this->nullableType($node);
             case \ast\AST_PARAM:
                 return $this->param($node);
             case \ast\AST_PARAM_LIST:
@@ -1455,6 +1457,11 @@ class AstReverter
         }
 
         return $code;
+    }
+
+    private function nullableType(Node $node) : string
+    {
+        return '?' . $this->revertAST($node->children['type']);
     }
 
     private function param(Node $node) : string
