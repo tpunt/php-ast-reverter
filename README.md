@@ -4,14 +4,9 @@ A tool that reverts an abstract syntax tree (AST) produced by the
 PSR-compliant code. This enables for code preprocessing to be done.
 
 Requirements:
- - PHP 7
+ - PHP 7.*
  - [php-ast](https://github.com/nikic/php-ast) extension (compatible with
- version 30)
-
-This tool is still under development and as such the code base will need
-refactoring, commenting, and more thorough testing. This is what I intend to
-work on in the coming weeks, along with my other tool (for php preprocessing)
-that will make use of this one.
+ version 30, 35, and 40)
 
 ## Installation
 

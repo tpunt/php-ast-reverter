@@ -1,5 +1,7 @@
 Namespaces Test
 <=======>
+7.0
+<=======>
 <?php
 
 use a\b\C;

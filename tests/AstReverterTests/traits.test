@@ -1,5 +1,7 @@
 Traits Test
 <=======>
+7.0
+<=======>
 <?php
 
 trait Test{}

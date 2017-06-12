@@ -1,0 +1,13 @@
+Function Test
+<=======>
+7.2
+<=======>
+<?php
+
+function foo(?iterable $x, ?callable $y, int $z, iterable $i) : ?callable {}
+<=======>
+<?php
+
+function foo(?iterable $x, ?callable $y, int $z, iterable $i) : ?callable
+{
+}

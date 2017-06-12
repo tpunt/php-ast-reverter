@@ -2,12 +2,28 @@
 
 use AstReverter\AstReverter;
 use function ast\parse_code;
+use PHPUnit\Framework\TestCase;
 
-class AstReverterTest extends \PHPUnit_Framework_TestCase
+require_once 'vendor/autoload.php';
+
+class AstReverterTest extends TestCase
 {
     public function testAstReverterV30()
     {
+        echo "\nphp-ast v30 tests:\n";
         $this->abstractTestAstReverter(30);
+    }
+
+    public function testAstReverterV35()
+    {
+        echo "\nphp-ast v35 tests:\n";
+        $this->abstractTestAstReverter(35);
+    }
+
+    public function testAstReverterV40()
+    {
+        echo "\nphp-ast v40 tests:\n";
+        $this->abstractTestAstReverter(40);
     }
 
     private function abstractTestAstReverter($version)
@@ -21,22 +37,23 @@ class AstReverterTest extends \PHPUnit_Framework_TestCase
             $fileParts = explode('.', $fileName);
             $extension = end($fileParts);
 
-            if ($extension !== 'phpt') {
+            if ($fileParts[1] !== 'test') {
                 continue;
             }
 
             $file = file_get_contents("{$testsDir}{$fileName}");
             $test = explode('<=======>', $file);
             $name = trim($test[0]);
-            $input = trim($test[1]);
-            $expected = ltrim($test[2]) . PHP_EOL;
-            $phpAstVersions = isset($test[3]) ? explode(',', trim($test[3])) : [30];
+            $minVersion = trim($test[1]);
+            $input = trim($test[2]);
+            $expected = ltrim($test[3]) . PHP_EOL;
 
-            if (!in_array($version, $phpAstVersions)) {
+            if (version_compare(PHP_VERSION, $minVersion) < 0) {
                 continue;
             }
 
-            $this->assertEquals($expected, $this->astReverter->getCode(parse_code($input, $version)), $name);
+            echo "Running {$fileParts[0]} tests\n";
+            $this->assertEquals($expected, $this->astReverter->getCode(parse_code($input, $version)), "{$name} ({$fileParts[0]})");
         }
     }
 }

@@ -1,5 +1,7 @@
 Try/Catch/Finally
 <=======>
+7.0
+<=======>
 <?php
 try {
     $a;

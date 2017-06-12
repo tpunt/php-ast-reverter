@@ -1,5 +1,7 @@
 Variable Syntax Test
 <=======>
+7.0
+<=======>
 <?php
 
 ${'a'};

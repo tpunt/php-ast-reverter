@@ -1,5 +1,7 @@
 Closures Test
 <=======>
+7.0
+<=======>
 <?php
 
 $a = function &($a) use ($b, &$c) : int {return 1;};

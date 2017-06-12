@@ -1,7 +1,8 @@
 Loops Test
 <=======>
+7.0
+<=======>
 <?php
-
 
 while (true) {
     1;
@@ -37,8 +38,7 @@ foreach ($arr as $key => &$val) {
 for ($a = 0, $b = 0; $a > 10, $b >= 1; ++$a, $b--) {
     "a";
 }
-for (;;) {
-}
+for (;;);
 for (;;);
 for (;;) {
     $a;
@@ -47,7 +47,8 @@ while (0);
 while (1) {
     1;
 }
-foreach ($a as $b);
+foreach ($a as $b) {
+}
 foreach ($a as $b) {
     true;
 }

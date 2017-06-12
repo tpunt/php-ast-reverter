@@ -289,13 +289,33 @@ class AstReverter
 
     private function array(Node $node) : string
     {
-        $code = '[';
+        switch ($node->flags) {
+            case \ast\flags\ARRAY_SYNTAX_LIST:
+                $code = 'list(';
+                $closing = ')';
+                break;
+            case \ast\flags\ARRAY_SYNTAX_LONG:
+                $code = 'array(';
+                $closing = ')';
+                break;
+            case \ast\flags\ARRAY_SYNTAX_SHORT:
+                $code = '[';
+                $closing = ']';
+                break;
+            case 0:
+                // nothing to do - required for PHP 7.0
+                $code = '[';
+                $closing = ']';
+                break;
+            default:
+                assert(false, "Unknown flag ({$node->flags}) for AST_ARRAY found.");
+        }
 
-        if (isset($node->children[0])) {
+        if ($node->children !== []) {
             $code .= $this->commaSeparatedValues($node);
         }
 
-        $code .= ']';
+        $code .= $closing;
 
         return $code;
     }
@@ -920,7 +940,7 @@ class AstReverter
 
         $bodyNode = $node->children['stmts'];
 
-        if ($bodyNode !== null) {
+        if ($bodyNode !== null && $bodyNode->children !== []) {
             if (
                 !$bodyNode instanceof Node
                 || $bodyNode->kind !== \ast\AST_STMT_LIST
@@ -972,24 +992,22 @@ class AstReverter
 
         $bodyNode = $node->children['stmts'];
 
-        if ($bodyNode !== null) {
-            if (
-                !$bodyNode instanceof Node
-                || $bodyNode->kind !== \ast\AST_STMT_LIST
-            ) {
-                $bodyNode = $this->createStmtList($bodyNode);
-            }
-
-            $code .= ' {' . PHP_EOL;
-
-            ++$this->indentationLevel;
-
-            $code .= $this->revertAST($bodyNode);
-
-            --$this->indentationLevel;
-
-            $code .= $this->indent() . '}';
+        if (
+            !$bodyNode instanceof Node
+            || $bodyNode->kind !== \ast\AST_STMT_LIST
+        ) {
+            $bodyNode = $this->createStmtList($bodyNode);
         }
+
+        $code .= ' {' . PHP_EOL;
+
+        ++$this->indentationLevel;
+
+        $code .= $this->revertAST($bodyNode);
+
+        --$this->indentationLevel;
+
+        $code .= $this->indent() . '}';
 
         return $code;
     }
@@ -1089,10 +1107,6 @@ class AstReverter
 
         if ($node->children['cond'] !== null) {
             $code .= '(' . $this->revertAST($node->children['cond']) . ')';
-        }
-
-        if ($node->children['stmts'] === null) {
-            return $code .= $this->terminateStatement($code);
         }
 
         $code .= ' {' . PHP_EOL;
@@ -1396,7 +1410,9 @@ class AstReverter
 
         switch ($node->flags) {
             case \ast\flags\NAME_FQ:
-                $code .= '\\';
+                if ($node->children['name'][0] != '\\') { // @version php-ast v30 and v35
+                    $code .= '\\';
+                }
                 break;
             case \ast\flags\NAME_NOT_FQ:
                 // nothing to do
@@ -1827,6 +1843,16 @@ class AstReverter
                 return 'array';
             case \ast\flags\TYPE_CALLABLE:
                 return 'callable';
+            case \ast\flags\TYPE_LONG:
+                return 'int';
+            case \ast\flags\TYPE_STRING:
+                return 'string';
+            case \ast\flags\TYPE_BOOL:
+                return 'bool';
+            case \ast\flags\TYPE_ITERABLE:
+                return 'iterable';
+            case \ast\flags\TYPE_DOUBLE:
+                return 'float';
             default:
                 assert(false, "Unknown flag ({$node->flags}) for AST_TYPE found.");
         }
@@ -1889,18 +1915,20 @@ class AstReverter
         }
 
         switch ($node->flags) {
-            case T_CLASS:
-                // nothing to do here
-                break;
-            case T_FUNCTION:
-                $code .= 'function ';
-                break;
-            case T_CONST:
+            case \ast\flags\USE_CONST:
                 $code .= 'const ';
                 break;
+            case \ast\flags\USE_FUNCTION:
+                $code .= 'function ';
+                break;
+            case \ast\flags\USE_NORMAL:
+                // nothing to do
+                break;
+            case 0:
+                // denotes no flags are set
+                break;
             default:
-                // Not possible to do the following assetion since 0 can denote T_CLASS
-                // assert(false, "Unknown flag ({$node->flags}) for AST_USE or AST_GROUP_USE found.");
+                assert(false, "Unknown flag ({$node->flags}) for AST_USE or AST_GROUP_USE found.");
         }
 
         return $code;
@@ -1911,13 +1939,13 @@ class AstReverter
         $code = '';
 
         switch ($node->flags) {
-            case T_CONST:
+            case \ast\flags\USE_CONST:
                 $code .= 'const ';
                 break;
-            case T_FUNCTION:
+            case \ast\flags\USE_FUNCTION:
                 $code .= 'function ';
                 break;
-            case T_CLASS:
+            case \ast\flags\USE_NORMAL:
                 // nothing to do
                 break;
             case 0:
@@ -1987,7 +2015,7 @@ class AstReverter
 
         $bodyNode = $node->children['stmts'];
 
-        if ($bodyNode !== null) {
+        if ($bodyNode !== null && (!$bodyNode instanceof Node || $bodyNode->children !== [])) {
             if (
                 !$bodyNode instanceof Node
                 || $bodyNode->kind !== \ast\AST_STMT_LIST

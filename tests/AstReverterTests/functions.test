@@ -1,5 +1,7 @@
 Function Test
 <=======>
+7.0
+<=======>
 <?php
 
 function test(int $a=[],$b=null,StdClass ...$c, &... $d){}
@@ -7,6 +9,8 @@ if (1){
 function &test(){}}
 function a(){static $a =a();}
 function a(){return;}
+function a(int $a, float $b, string $c, array $d, callable $e, iterable $f, bool $g) {}
+('\bar')();
 <=======>
 <?php
 
@@ -26,3 +30,7 @@ function a()
 {
     return;
 }
+function a(int $a, float $b, string $c, array $d, callable $e, iterable $f, bool $g)
+{
+}
+\bar();

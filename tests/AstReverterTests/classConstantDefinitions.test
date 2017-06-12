@@ -1,5 +1,7 @@
 Class Constant Definitions Test
 <=======>
+7.0
+<=======>
 <?php
 
 class A {const function = 3,use=4;}
