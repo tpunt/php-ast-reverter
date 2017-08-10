@@ -6,7 +6,7 @@ PSR-compliant code. This enables for code preprocessing to be done.
 Requirements:
  - PHP 7.*
  - [php-ast](https://github.com/nikic/php-ast) extension (compatible with
- version 30, 35, and 40)
+ versions 30, 35, 40, and 45)
 
 ## Installation
 
@@ -51,7 +51,7 @@ class ClassName extends AnotherClass implements AnInterface
 }
 end;
 
-$ast = ast\parse_code($code, $version=30);
+$ast = ast\parse_code($code, $version=40);
 
 echo (new AstReverter\AstReverter)->getCode($ast);
 ```
