@@ -3,6 +3,7 @@
 namespace AstReverter;
 
 use ast\Node;
+use ast\Node\Decl;
 
 ini_set('assert.exception', 1);
 
@@ -645,7 +646,7 @@ class AstReverter
             $implements .= $this->revertAST($node->children['implements']);
         }
 
-        $code .= $modifier . $type . ' ' . $node->name;
+        $code .= $modifier . $type . ' ' . $this->getNodeName($node);
 
         if ($args !== null) {
             $code .= $this->revertAST($args);
@@ -670,6 +671,15 @@ class AstReverter
         $code .= $this->indent() . '}';
 
         return $code;
+    }
+
+    private function getNodeName(Node $node) : string
+    {
+        if ($node instanceof Decl) {
+            return $node->name ?? '';
+        }
+
+        return $node->children['name'] ?? '';
     }
 
     private function classConst(Node $node) : string
@@ -1048,7 +1058,7 @@ class AstReverter
             $code .= '&';
         }
 
-        $code .= $node->name . $this->revertAST($node->children['params']);
+        $code .= $this->getNodeName($node) . $this->revertAST($node->children['params']);
 
         if ($node->children['returnType'] !== null) {
             $code .= ' : ' . $this->revertAST($node->children['returnType']);
@@ -1383,7 +1393,7 @@ class AstReverter
         $code .= $scope
             . ' function '
             . $returnsRef
-            . $node->name
+            . $this->getNodeName($node)
             . $this->revertAST($node->children['params']);
 
         if ($node->children['returnType'] !== null) {
