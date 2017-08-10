@@ -602,6 +602,8 @@ class AstReverter
 
         if (isset($node->docComment)) {
             $code .= $node->docComment . PHP_EOL;
+        } else if (isset($node->children['docComment'])) { // php-ast v50+
+            $code .= $node->children['docComment'] . PHP_EOL;
         }
 
         $modifier = '';
@@ -1256,6 +1258,8 @@ class AstReverter
 
         if (isset($node->docComment)) {
             $code .= $node->docComment . PHP_EOL . $this->indent();
+        } else if (isset($node->children['docComment'])) { // php-ast v50+
+            $code .= $node->children['docComment'] . PHP_EOL . $this->indent();
         }
 
         // (abstract|final)?(public|protected|private)(static)?&?
@@ -1616,6 +1620,8 @@ class AstReverter
 
         if (isset($node->docComment)) {
             $code .= PHP_EOL . $this->indent() . $node->docComment . PHP_EOL . $this->indent();
+        } else if (isset($node->children['docComment'])) { // php-ast v50+
+            $code .= PHP_EOL . $this->indent() . $node->children['docComment'] . PHP_EOL . $this->indent();
         } else {
             $code .= ' ';
         }

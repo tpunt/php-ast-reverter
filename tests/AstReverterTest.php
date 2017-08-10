@@ -32,6 +32,12 @@ class AstReverterTest extends TestCase
         $this->abstractTestAstReverter(45);
     }
 
+    public function testAstReverterV50()
+    {
+        echo "\nphp-ast v50 tests:\n";
+        $this->abstractTestAstReverter(50);
+    }
+
     private function abstractTestAstReverter($version)
     {
         $testsDir = __DIR__ . '/AstReverterTests/';
