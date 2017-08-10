@@ -17,6 +17,8 @@
         }
     ],
     "autoload": {
-        "files": ["src/autoloader.php"]
+        "psr-4": {
+            "AstReverter\\": "src/AstReverter"
+        }
     }
 }
