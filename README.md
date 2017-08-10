@@ -6,7 +6,7 @@ PSR-compliant code. This enables for code preprocessing to be done.
 Requirements:
  - PHP 7.*
  - [php-ast](https://github.com/nikic/php-ast) extension (compatible with
- versions 30, 35, 40, and 45)
+ versions 30, 35, 40, 45, and 50)
 
 ## Installation
 
