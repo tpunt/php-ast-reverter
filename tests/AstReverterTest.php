@@ -4,7 +4,7 @@ use AstReverter\AstReverter;
 use function ast\parse_code;
 use PHPUnit\Framework\TestCase;
 
-require_once 'vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 class AstReverterTest extends TestCase
 {
