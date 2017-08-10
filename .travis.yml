@@ -10,4 +10,6 @@ allow_failures:
 - php: nightly
 fast_finish: true
 
-install: composer install
+install:
+  - composer install
+  - pecl install ast
