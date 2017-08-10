@@ -11,13 +11,13 @@ class AstReverterTest extends TestCase
     public function testAstReverterV30()
     {
         echo "\nphp-ast v30 tests:\n";
-        $this->abstractTestAstReverter(30);
+        @$this->abstractTestAstReverter(30);
     }
 
     public function testAstReverterV35()
     {
         echo "\nphp-ast v35 tests:\n";
-        $this->abstractTestAstReverter(35);
+        @$this->abstractTestAstReverter(35);
     }
 
     public function testAstReverterV40()
